@@ -3,8 +3,8 @@
 import io, os, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, 'PRD-边陲-v1.9.html')
-DST = os.path.join(ROOT, 'PRD-边陲-v2.0.html')
+SRC = os.path.join(ROOT, 'docs', 'prd', 'PRD-边陲-v1.9.html')
+DST = os.path.join(ROOT, 'docs', 'prd', 'PRD-边陲-v2.0.html')
 shutil.copyfile(SRC, DST)
 s = io.open(DST, encoding='utf-8').read()
 n = 0

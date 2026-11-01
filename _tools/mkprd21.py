@@ -3,8 +3,8 @@
 import io, os, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, 'PRD-边陲-v2.0.html')
-DST = os.path.join(ROOT, 'PRD-边陲-v2.1.html')
+SRC = os.path.join(ROOT, 'docs', 'prd', 'PRD-边陲-v2.0.html')
+DST = os.path.join(ROOT, 'docs', 'prd', 'PRD-边陲-v2.1.html')
 if not os.path.exists(SRC):
     raise SystemExit('missing ' + SRC)
 shutil.copyfile(SRC, DST)

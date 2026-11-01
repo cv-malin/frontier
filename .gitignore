@@ -1,9 +1,16 @@
 # 截图与历史版本快照：体积大、可再生，不进库
-shots-v*/
-shots/
-_backup-v*.html
+# 注意前导斜杠：不带它的话 `shots/` 会连 docs/shots/ 一起忽略
+/shots-v*/
+/shots/
+/_backup-v*.html
 *.png
 *.jpg
+
+# 例外：README 用的压缩截图要进库，否则 GitHub 上 README 是空图
+!docs/shots/*.webp
+
+# 发行包是构建产物，由 _tools/pack.py 生成
+dist/
 
 # PRD 的 PDF 是从 HTML 打的，只留 HTML
 *.pdf
