@@ -135,8 +135,11 @@ git branch -M main 2>/dev/null || true
 git remote remove origin 2>/dev/null || true
 git remote add origin "https://github.com/$FULL.git"
 
-# 凭据只走本次命令的临时 header，不写进 .git/config
-GIT_AUTH=(-c "http.https://github.com/.extraheader=Authorization: Bearer $TOKEN")
+# 凭据只走本次命令的临时 header，不写进 .git/config。
+# 注意：GitHub 的 git 端点认 Basic，不认 Bearer —— 用 Bearer 会返回
+# "remote: invalid credentials"，而 API 端点恰好相反。两边别搞混。
+BASIC="$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\r\n')"
+GIT_AUTH=(-c "http.https://github.com/.extraheader=Authorization: Basic $BASIC")
 
 git "${GIT_AUTH[@]}" push -u origin main
 
