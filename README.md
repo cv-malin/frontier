@@ -6,6 +6,8 @@
 
 [![License](https://img.shields.io/badge/license-MIT-4ec9a5.svg)](#许可)
 [![No Dependencies](https://img.shields.io/badge/dependencies-0-f0a93f.svg)](#技术说明)
+[![Release](https://img.shields.io/github/v/release/cv-malin/frontier)](https://github.com/cv-malin/frontier/releases)
+[![Play Online](https://img.shields.io/badge/play-online-5aa0f0.svg)](https://cv-malin.github.io/frontier/)
 
 <img src="docs/shots/main.webp" width="880" alt="主界面">
 
@@ -21,9 +23,11 @@
 
 | | |
 |---|---|
-| **直接玩** | 下载仓库后双击 `index.html`。不需要 Node、不需要构建、不需要服务器 |
-| **在线玩** | 开启 GitHub Pages 后可从 Pages 地址直接进入（见下方“发布”） |
-| **发行包** | 在 [Releases](../../releases) 页下载 `frontier-vX.Y.zip`，解压即玩 |
+| **在线玩** | <https://cv-malin.github.io/frontier/> —— 打开就玩，手机也能开 |
+| **发行包** | 在 [Releases](https://github.com/cv-malin/frontier/releases) 页下载 `frontier-v2.2.zip`，解压即玩 |
+| **源码** | `git clone https://github.com/cv-malin/frontier.git`，然后双击 `index.html` |
+
+三种方式都不需要 Node、不需要构建、不需要服务器。
 
 ## 怎么玩
 

@@ -149,14 +149,16 @@ git "${GIT_AUTH[@]}" push -f origin "refs/tags/$TAG"
 
 # ---------- 4. Release ----------
 say "创建 Release $TAG"
+# 注意：这段 python 代码外面包的是双引号，所以里面**不能出现反引号** ——
+# shell 会把它当命令替换先执行掉，Release 描述里就只剩两个空格。
 REL_BODY="$(python -c "
 import json, sys
 print(json.dumps({
     'tag_name': sys.argv[1],
     'name': '边陲 ' + sys.argv[1],
-    'body': '## 下载\n\n解压后双击 `index.html` 即可开玩，无需安装任何环境。\n\n'
+    'body': '## 下载\n\n解压后双击 index.html 即可开玩，无需安装任何环境。\n\n'
             '## 这一版\n\n'
-            '完整的农业线、决策层与复盘系统。详细设计见仓库 `docs/prd/`。\n',
+            '完整的农业线、决策层与复盘系统。详细设计见仓库 docs/prd/ 目录。\n',
     'draft': False,
     'prerelease': False,
 }))" "$TAG")"
