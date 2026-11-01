@@ -25,15 +25,27 @@ TOKEN="${GITHUB_TOKEN:-}"
 REPO_NAME="${REPO_NAME:-frontier}"
 VISIBILITY="${VISIBILITY:-public}"
 PAGES="${PAGES:-1}"
+OWNER="${GITHUB_OWNER:-cv-malin}"
 
 die() { echo "错误: $*" >&2; exit 1; }
 say() { echo "==> $*"; }
 
-[ -n "$TOKEN" ] || die "没有 GITHUB_TOKEN。先建一个 PAT（勾 repo 权限），再运行：
-    GITHUB_TOKEN=ghp_xxx ./_tools/publish.sh"
-
 command -v curl >/dev/null || die "找不到 curl"
 command -v python >/dev/null || die "找不到 python"
+
+# 没给 GITHUB_TOKEN 时，试着从 git 凭据管理器取
+# （_tools/github-login.bat 用设备码登录后，GCM 会把 OAuth token 存在这里）
+if [ -z "$TOKEN" ]; then
+  say "没有 GITHUB_TOKEN，尝试从 git 凭据管理器读取"
+  TOKEN="$(printf 'protocol=https\nhost=github.com\n\n' \
+    | timeout 15 git credential fill 2>/dev/null \
+    | sed -n 's/^password=//p' | tr -d '\r' | head -1)"
+fi
+
+[ -n "$TOKEN" ] || die "拿不到凭据。二选一：
+  1) 双击 _tools/github-login.bat 完成一次设备码登录（不需要建 token）
+  2) 建一个 PAT（勾 repo 权限），然后：
+     GITHUB_TOKEN=ghp_xxx ./_tools/publish.sh"
 
 VERSION="${VERSION:-$(sed -n "s/^VERSION = '\(.*\)'/\1/p" _tools/pack.py | head -1)}"
 [ -n "$VERSION" ] || die "读不到版本号，检查 _tools/pack.py 里的 VERSION"
@@ -81,9 +93,14 @@ fi
 say "确认账号"
 ME="$(api GET /user)"
 LOGIN="$(printf '%s' "$ME" | jget login)" || die "token 无效，或没有读账号的权限"
-OWNER="$LOGIN"
+echo "    token 属于: $LOGIN"
+
+# 目标账号得和 token 的主人一致，否则会把仓库建到别人名下
+if [ "$LOGIN" != "$OWNER" ]; then
+  die "token 属于 $LOGIN，但目标是 $OWNER。
+  想推到 $LOGIN 名下就加 GITHUB_OWNER=$LOGIN，或者换一个 $OWNER 的 token。"
+fi
 FULL="$OWNER/$REPO_NAME"
-echo "    账号: $OWNER"
 
 # ---------- 2. 建仓库（已存在就复用） ----------
 say "检查远程仓库 $FULL"
