@@ -143,6 +143,33 @@ index.html?v20=1      # 决策层（14 项）
 
 设计演进和踩过的坑都写在 `docs/prd/` 里，最新一份是 [PRD v2.2](docs/prd/PRD-边陲-v2.2.html)。
 
+## 发布
+
+推送到 GitHub、打 tag、生成带 zip 的 Release、开 Pages，一条命令：
+
+```bash
+GITHUB_TOKEN=ghp_xxx ./_tools/publish.sh
+```
+
+它会依次做：建仓库（已存在则复用）→ 标准 `git push` 推 `main` → 打 tag → 建 Release → 上传 `dist/frontier-vX.Y.zip` → 开 Pages。
+
+代码全程走 `git push`，**不做逐文件 API 写入**。API 只用在三件 git 协议本身做不到的事上：建仓库、建 Release、开 Pages。token 通过 `-c http.extraheader` 传给这次推送，**不落进 `.git/config`**。
+
+可调参数：
+
+| 变量 | 默认 | 说明 |
+|---|---|---|
+| `REPO_NAME` | `frontier` | 仓库名 |
+| `VISIBILITY` | `public` | `public` / `private` |
+| `PAGES` | `1` | 设 `0` 跳过开 Pages |
+| `VERSION` | 读自 `_tools/pack.py` | 版本号 |
+
+只打包、不发 GitHub：
+
+```bash
+python _tools/pack.py     # 生成 dist/frontier-vX.Y.zip，解压即玩
+```
+
 ## 许可
 
 MIT，见 [LICENSE](LICENSE)。
