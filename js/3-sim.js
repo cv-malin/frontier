@@ -1096,6 +1096,7 @@ function finishJob(c, j){
         c.wound = Math.max(0, (c.wound || 0) - 24);
         c.hp = Math.min(c.maxHp, c.hp + 12);
         floatText(c.fx, c.fy - 0.4, '伤口好转', '#8fd08a');
+        noteHist(c, '用草药处理了伤口', 'good');
         SFX.done();
       }
       break;
@@ -1181,6 +1182,9 @@ function shoot(src, tgt, isTurret){
 
 function hurt(a, dmg, from){
   if(a.dead) return;
+  /* v2.2：记下这一下是谁打的。结算时「他是怎么死的」要靠它回答 ——
+     以前的战报只有「阵亡 2 人」，玩家连死在谁手上都不知道。 */
+  if(from){ a.lastHitBy = from.name || '不明来路'; a.lastHitKind = from.kind || null; a.lastHitD = state.day; }
   if(a.side === 'col' && hasTech('armor')) dmg *= 0.88;
   /* 偷袭（v1.6）：睡着的人被第一下打中要多吃 55% 伤害。
      守夜的收益有一半就体现在这里 —— 他不是更能打，而是不会在睡梦里挨这一刀。 */
@@ -1191,6 +1195,9 @@ function hurt(a, dmg, from){
     logEvent(`<b>${a.name}</b> 在睡梦里被捅了一刀。`, 'bad');
   }
   a.hp -= dmg;
+  /* v2.2：伤到一定程度才记 —— 每挨一枪都记会把个人史冲成一串「被打伤」。
+     按天按人自动去重，所以同一天被同一个人打十枪只留一条。 */
+  if(a.side === 'col' && from && dmg >= 6) noteHist(a, `被${from.name || '不明来路'}打伤`, 'bad', 'wound');
   if(a.side === 'col'){
     /* 伤口（v1.3）：不只是扣血，还会累积成需要草药处理的伤 */
     const wm = hasTrait(a,'tough') ? 0.5 : 1;
@@ -1223,6 +1230,10 @@ function hurt(a, dmg, from){
       logEvent(`<b>${a.name}</b> 阵亡了。`, 'bad');
       state.cols = state.cols.filter(x=> x !== a);
       state.stats.deaths = (state.stats.deaths || 0) + 1;   // v1.8 野心判定用
+      /* v2.2 讣告：名字、第几天、死在谁手上 */
+      state.kia = state.kia || [];
+      state.kia.push({ n: a.name, d: state.day, by: a.lastHitBy || '不明来路', k: a.lastHitKind || null });
+      noteDay(`<b>${a.name}</b> 阵亡 —— 死在${a.lastHitBy || '不明来路'}手上`, 'bad');
     } else {
       dropLoot(a);
       logEvent(`一名掠袭者被击毙。`, 'good');
@@ -1247,6 +1258,10 @@ function hurt(a, dmg, from){
     a.job = null; a.state = 'idle'; a.sleeping = false; a.path = null;
     if(a.carry){ addItems(a.x, a.y, a.carry.kind, a.carry.qty); a.carry = null; }
     logEvent(a.side === 'col' ? `<b>${a.name}</b> 倒下了！` : `一名掠袭者失去战斗能力。`, a.side === 'col' ? 'bad' : 'good');
+    if(a.side === 'col'){
+      noteHist(a, `被${a.lastHitBy || '不明来路'}打倒`, 'bad');
+      noteDay(`<b>${a.name}</b> 倒下，被人拖了回去`, 'bad');
+    }
   }
 }
 
@@ -1598,6 +1613,9 @@ function stepColonist(c, dm){
   c.needs.hunger -= (c.sleeping ? 0.026 : 0.052)*dm;
   c.needs.hunger = clamp(c.needs.hunger, 0, 100);
   c.needs.rest = clamp(c.needs.rest, 0, 100);
+  /* v2.2：饿到掉出「吃得下」的线就记一笔。noteHist 会按天去重，
+     所以这一天剩下的时间不会再刷。 */
+  if(c.needs.hunger < 20) noteHist(c, '饿得发慌，干什么都没劲', 'warn');
 
   if(c.sick > 0){
     c.sick -= dm;
@@ -2164,14 +2182,130 @@ function cmdName(cmd){
   return { focus:'集火', rally:'集结', retreat:'撤退' }[cmd.kind] || '指令';
 }
 
+/* =====================================================================
+   11.9 · 运行档案（v2.2）
+   ---------------------------------------------------------------------
+   三件事共用一份数据：
+     1) state.snaps   每日快照 —— 复盘要能定位「哪一天开始崩的」
+     2) state.dayLog  每日事件 —— 让复盘说人话，而不是只甩数字
+     3) c.hist / kia  个人史与死因 —— 让玩家能追问「他是怎么死的」
+
+   全部只读、不抽签。v2.0 的教训：任何一次额外的 rnd() 都会重排整条
+   世界线，十局长局回归会当场作废。这一节里一行 rnd 都不许有。
+   ===================================================================== */
+function archInit(){
+  state.snaps = [];
+  state.dayLog = {};
+  state.kia = [];
+  for(const c of state.cols) if(!c.hist) c.hist = [];
+}
+
+/* 个人史：只记「这个人身上发生了什么」。
+   去重有两个键：一模一样的一句（挨饿会一天触发几十次），以及调用方指定的
+   分组键（挨打只留当天第一条 —— 同一晚被三个人打，不需要三条一模一样的记录）。 */
+function noteHist(c, s, k, key){
+  if(!c || !c.hist) return;
+  if(c.hist.some(h=> h.d === state.day && (h.s === s || (key && h.key === key)))) return;
+  c.hist.push({ d: state.day, s, k: k || '', key: key || null });
+  if(c.hist.length > 14) c.hist.shift();
+}
+
+/* 每日事件：复盘挑出「最亏的三天」之后，靠这里给出当天的原话 */
+function noteDay(s, k){
+  if(!state.dayLog) state.dayLog = {};
+  const d = state.day;
+  (state.dayLog[d] = state.dayLog[d] || []).push({ s, k: k || '' });
+}
+function dayEvents(d){ return (state.dayLog && state.dayLog[d]) || []; }
+
 function snapshotDay(){
+  const alive = (state.cols || []).filter(c=> !c.down && !c.dead);
+  const mean = k=> alive.length ? alive.reduce((a, c)=> a + (c.needs[k] || 0), 0) / alive.length : 0;
+  let site = 0;
+  for(const t of tiles) if(t.bld && t.bld.prog < 1) site++;
   return {
     wood: Math.round(state.res.wood || 0), stone: Math.round(state.res.stone || 0),
     food: Math.round(state.res.food || 0), meal: Math.round(state.res.meal || 0),
     herb: Math.round(state.res.herb || 0),
     kills: state.stats.kills || 0, built: state.stats.built || 0,
-    pop: state.cols.length, mood: Math.round(avgMood())
+    pop: state.cols.length, mood: Math.round(avgMood()),
+    /* v2.2：以下只给复盘用。日报只读上面几个键，多出来的不影响它。 */
+    down: (state.cols || []).filter(c=> c.down).length,
+    hunger: Math.round(mean('hunger')), rest: Math.round(mean('rest')),
+    wall: countBuilt('wall'), turret: countBuilt('turret'), bed: countBuilt('bed'),
+    site, tech: Object.keys(state.tech.done || {}).length,
+    stage: state.stage.idx, dens: (state.dens || []).length
   };
+}
+
+/* 「势」—— 一天的体感分。复盘不比单项：少一个人、塌一段墙、粮食见底，
+   在玩家那边是同一件事的不同说法，所以先合成一个数再比。 */
+function dayPower(s){
+  if(!s) return 0;
+  return s.pop * 7 + (s.mood || 0) * 0.30
+       + Math.min(60, ((s.food || 0) + (s.meal || 0) * 3) / 4)
+       + (s.built || 0) * 1.2 + (s.wall || 0) * 0.8 + (s.turret || 0) * 1.5
+       - (s.down || 0) * 6 - ((s.hunger || 100) < 45 ? 8 : 0);
+}
+
+/* 一天为什么掉分：先看当天真发生过什么，没事件再从快照差值里推 */
+function turnWhy(prev, cur, d){
+  const out = [];
+  for(const e of dayEvents(d)) out.push({ s: e.s, k: e.k });
+  if(out.length >= 3) return out.slice(0, 3);
+  if(prev){
+    if(cur.pop < prev.pop) out.push({ s: `比前一天少了 ${prev.pop - cur.pop} 个人`, k:'bad' });
+    if((cur.hunger || 100) < 45 && (prev.hunger || 100) >= 45) out.push({ s:'口粮见底，全员掉到轻活', k:'warn' });
+    if((cur.wall || 0) < (prev.wall || 0)) out.push({ s:`墙从 ${prev.wall} 段掉到 ${cur.wall} 段`, k:'warn' });
+    if((cur.down || 0) > (prev.down || 0)) out.push({ s:`${cur.down} 人躺在地上没人管`, k:'bad' });
+    if((cur.mood || 0) < (prev.mood || 0) - 8) out.push({ s:`士气 ${prev.mood} → ${cur.mood}`, k:'warn' });
+  }
+  return out.slice(0, 3);
+}
+
+/* 复盘：扫出「势」掉得最狠的三天。没有明显崩盘就退化成「最差的那天」，
+   再没有就返回空 —— 全胜的一局不该硬凑三条教训。 */
+function postMortem(){
+  const ss = state.snaps || [];
+  if(ss.length < 2) return [];
+  const rows = [];
+  for(let i=1;i<ss.length;i++){
+    rows.push({ d: ss[i].d, dv: dayPower(ss[i]) - dayPower(ss[i-1]), cur: ss[i], prev: ss[i-1] });
+  }
+  let pick = rows.filter(r=> r.dv < -4).sort((a, b)=> a.dv - b.dv).slice(0, 3);
+  if(!pick.length) pick = rows.slice().sort((a, b)=> a.dv - b.dv).slice(0, 1);
+  return pick.sort((a, b)=> a.d - b.d).map(r=> ({
+    d: r.d, dv: Math.round(r.dv), why: turnWhy(r.prev, r.cur, r.d)
+  }));
+}
+
+/* 今日瓶颈（v2.2）：侧栏那一行。玩家最常问的是「为什么墙不涨」，
+   答案通常只有四个：人倒了、没吃饱、劲用完了、没人去盖。 */
+function bottleneckNow(){
+  const cs = state.cols || [];
+  if(!cs.length) return [{ t:'没有居民了', k:'bad' }];
+  const n = cs.length;
+  let down = 0, hungry = 0, tired = 0, wound = 0, idle = 0, building = 0;
+  for(const c of cs){
+    if(c.down){ down++; continue; }
+    if(c.needs.hunger < 30) hungry++;
+    if(!canDoHeavy(c)) tired++;
+    if((c.wound || 0) >= 15) wound++;
+    if(c.job && c.job.type === 'build') building++;
+    if(c.job && c.job.type === 'wander') idle++;
+  }
+  let site = 0;
+  for(const t of tiles) if(t.bld && t.bld.prog < 1) site++;
+
+  const out = [];
+  if(down) out.push({ t:`${down} 人躺着，今天少 ${down} 双手`, k:'bad' });
+  if(hungry) out.push({ t:`${hungry} 人没吃饱，心情在往下掉`, k:'warn' });
+  if(site && !building) out.push({ t:`${site} 处工地停着，没人去盖`, k:'warn' });
+  else if(tired >= Math.ceil(n * 0.4)) out.push({ t:`${tired} 人劲用完了，只剩轻活`, k:'warn' });
+  if(!out.length && wound >= Math.ceil(n * 0.5)) out.push({ t:`${wound} 人带伤，干什么都慢`, k:'' });
+  if(!out.length && idle >= Math.ceil(n * 0.5)) out.push({ t:`${idle} 人闲着：资源够用，也没摆新蓝图`, k:'' });
+  if(!out.length) out.push({ t:'人人有活干，料也够', k:'ok' });
+  return out.slice(0, 3);
 }
 function avgMood(){
   if(!state.cols.length) return 0;
@@ -2355,10 +2489,12 @@ function settleCrisis(cr){
        玩家算下来会倾向于直接放弃 */
     moodAll(6);
     logEvent(`<b>${def.name}</b>：${def.ok}`, 'good');
+    noteDay(`${def.name}：备齐了`, 'good');
   } else {
     const msg = def.fail();
     cr.state = 'failed';
     logEvent(`<b>${def.name}</b>：${def.bad}${msg ? `（${msg}）` : ''}`, 'bad');
+    noteDay(`${def.name}：没备齐，${def.bad}`, 'bad');
     uiDirty.res = true;
   }
   uiDirty.side = true;
@@ -2372,6 +2508,7 @@ function declineCrisis(cr){
   cr.state = 'declined';
   for(const c of state.cols) c.needs.mood = Math.max(0, c.needs.mood - 7);
   logEvent(`你们决定不管<b>${def.name}</b>了。事情过去了，但每个人都记着。`, 'warn');
+  noteDay(`放弃应对${def.name}，全员心情 −7`, 'warn');
   uiDirty.side = true;
   return true;
 }
@@ -2394,10 +2531,16 @@ function onNewDay(day){
     c.debuffs = (c.debuffs || []).concat(k);
     c.wound = 46;
     logEvent(`<b>${c.name}</b> 的伤留下了根子 —— ${DEBUFFS[k].n}。${DEBUFFS[k].d}，好不了了。`, 'warn');
+    noteHist(c, `伤口拖成了${DEBUFFS[k].n}`, 'bad');
+    noteDay(`<b>${c.name}</b> 的伤拖成了${DEBUFFS[k].n}`, 'warn');
   }
   /* 先结算昨天，再进入今天 */
   showDayReport(state.daySnap, day - 1);
   state.daySnap = snapshotDay();
+  /* v2.2：刚过完的那一天进档案。存档不过 60 天，无尽模式也不会撑爆内存。 */
+  state.snaps = state.snaps || [];
+  state.snaps.push({ d: day - 1, ...state.daySnap });
+  if(state.snaps.length > 60) state.snaps.shift();
   /* 关系结算（v1.3）：每天两次随机互动，久了会成朋友或结怨 */
   tickBonds();
   /* 阶段结算（v1.5）：过了节点日就判定，拖欠的补给不会补 */
@@ -3285,6 +3428,7 @@ window.pickAct2 = (k)=>{
     }
     if(gone){
       logEvent(`<b>${gone.name}</b> 跟着商人走了。箱子留了下来。`, 'warn');
+      noteDay(`第二幕成交：<b>${gone.name}</b> 跟着商人走了`, 'warn');
       state.cols = state.cols.filter(x=> x !== gone);
       if(state.sel && state.sel.kind === 'col' && state.sel.id === gone.id) state.sel = null;
       if(state.cmd && state.cmd.some(x=> x === gone.id)) state.cmd = null;
@@ -3292,6 +3436,7 @@ window.pickAct2 = (k)=>{
   } else {
     moodAll(9);
     logEvent('你们没接那只箱子。商人耸耸肩，把盖子合上了。', 'good');
+    noteDay('第二幕拒绝成交，此后不会再有新人来', 'warn');
   }
   uiDirty.side = true; uiDirty.res = true; uiDirty.log = true;
   closeModal();

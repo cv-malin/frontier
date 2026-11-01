@@ -870,7 +870,11 @@ function draw(now){
 
   /* --- 特效 --- */
   for(const f of state.fx){
-    const age = (now - f.t)/f.life;
+    /* v2.2 修正：f.t 用的是 performance.now()，而这里拿到的是 rAF 时间戳 ——
+       后者是本帧「开始」的时刻，可能比 f.t 还早几百毫秒（特效是在本帧的
+       模拟步里创建的）。不夹住的话 age 会是负的，ring 的半径算成负数，
+       ctx.arc 直接抛 IndexSizeError，整帧的绘制从这里往后全断掉。 */
+    const age = Math.max(0, Math.min(1, (now - f.t) / f.life));
     if(age >= 1) continue;
     const px = ox + f.x*pts, py = oy + f.y*pts;
     if(f.kind === 'shot'){

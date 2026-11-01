@@ -39,6 +39,10 @@ function newGame(seed, diff, scen, amb){
   state.watch = 1; state.watchSet = false; state.nightRaid = null;
   state.nightTimes = 0; state.nightRepel = 0; state.guardSpot = null;
   state.totalPop = sc.pop || 3;
+  /* v2.2：种子要留下来。跨局档案里「用同一种子重打」全靠它，
+     没有这一行，那一局就永远只是个分数。 */
+  state.seed = sd;
+  state.recDone = false;
 
   const __t0 = performance.now();
   mapSet(sc.map);
@@ -66,6 +70,8 @@ function newGame(seed, diff, scen, amb){
     state.cols.push(c);
   }
 
+  /* v2.2：档案初始化必须在这之后 —— 个人史挂在人身上 */
+  archInit();
   /* 远征野心要在开局就把三个匪巢放好：地图上的目标必须第一天就看得见，
      否则玩家前十天不知道该往哪走。
 
@@ -752,6 +758,118 @@ function init(){
     document.title = 'V20::' + JSON.stringify(R).replace(/\s+/g,' ');
     return;
   }
+  /* v2.2 运行档案：每日快照 / 个人史 / 讣告 / 复盘 / 跨局战绩
+     ------------------------------------------------------------------
+     这一版改的全是「记录」，最大的风险不是记错，而是记录本身抽了签 ——
+     一次 rnd 就重排世界线，前面十局长局回归全作废。所以 snapNoRnd 是命门。 */
+  if(q.has('v22')){
+    const R = { checks:{} };
+    const savedRNG = RNG;
+    window.__fastTest = true;
+    try{
+      /* 1. 跨天要留档，且记的是「刚过完的那一天」 */
+      newGame(7, 'calm', 'valley');
+      state.snaps = []; state.dayLog = {};
+      const d0 = state.day;
+      onNewDay(d0 + 1);
+      R.snap = { n: state.snaps.length, first: state.snaps[0] && state.snaps[0].d, day0: d0 };
+      R.checks.snapPush = state.snaps.length === 1 && state.snaps[0].d === d0
+                          && typeof state.snaps[0].wall === 'number';
+
+      /* 2. 快照不许抽签 */
+      let calls = 0;
+      RNG = ()=>{ calls++; return 0.5; };
+      snapshotDay();
+      RNG = savedRNG;
+      R.check_snapCalls = calls;
+      R.checks.snapNoRnd = calls === 0;
+
+      /* 3. 个人史去重：挨饿的人一天会触发几十次，不去重就全是同一句 */
+      const c0 = state.cols[0];
+      c0.hist = []; state.day = 4;
+      hurt(c0, 9, { name:'掠袭者甲', kind:'raider', side:'raid' });
+      noteHist(c0, '同一天同一句', '');
+      noteHist(c0, '同一天同一句', '');
+      noteHist(c0, '同一天同一句', '');
+      R.hist = { n: c0.hist.length, same: c0.hist.filter(h=> h.s === '同一天同一句').length };
+      R.checks.histDedup = R.hist.same === 1 && c0.hist.length >= 2;
+      /* 同一晚被两个人打，只留一条 —— 否则个人史会变成一串「被打伤」 */
+      const caller = (nm)=> ({ name:nm, kind:'raider', side:'raid' });
+      hurt(c0, 9, caller('掠袭者乙'));
+      hurt(c0, 9, caller('掠袭者丙'));
+      R.histWound = c0.hist.filter(h=> /打伤/.test(h.s)).length;
+      R.checks.histWoundOnce = R.histWound === 1;
+
+      /* 4. 讣告要记得死在谁手上 */
+      const c1 = state.cols[1];
+      c1.hp = 1;
+      state.kia = [];
+      hurt(c1, 200, { name:'掠袭者测试', kind:'raider', side:'raid' });
+      R.kia = state.kia[0] || null;
+      R.checks.kiaRecord = state.kia.length === 1
+        && state.kia[0].by === '掠袭者测试' && state.kia[0].d === state.day;
+
+      /* 5. 瓶颈诊断：全员没劲时要说出「劲用完了」，而不是「人人有活干」 */
+      newGame(7, 'calm', 'valley');
+      for(const c of state.cols) c.vigor = 0;
+      const bn = bottleneckNow();
+      R.bn = bn.map(i=> i.t);
+      R.checks.bottleneck = bn.some(i=> /劲用完/.test(i.t));
+      for(const c of state.cols) c.vigor = VIGOR_MAX;
+      R.checks.bottleneckOk = bottleneckNow().every(i=> i.k !== 'bad');
+
+      /* 6. 复盘能定位崩塌那天，并带上当天的原话 */
+      state.snaps = [];
+      state.dayLog = {};
+      for(let d=1; d<=5; d++){
+        state.snaps.push({ d, pop:4, mood:60, food:40, meal:10, built:d, wall:d*2,
+                           down:0, hunger:80, turret:0 });
+      }
+      state.snaps[2].pop = 2; state.snaps[2].mood = 28; state.snaps[2].hunger = 30;
+      state.dayLog[3] = [{ s:'<b>陈默</b> 阵亡 —— 死在掠袭者3手上', k:'bad' }];
+      state.day = 3;
+      const pm = postMortem();
+      R.pm = pm;
+      R.checks.pmDetect = pm.length > 0 && pm[0].d === 3;
+      R.checks.pmEvent = pm.length > 0 && pm[0].why.some(w=> /阵亡/.test(w.s));
+
+      /* 7. 运行档案：记一次、不重复、带种子 */
+      const bak2 = (()=>{ try{ return localStorage.getItem(SLOT_KEYS[2]); }catch(e){ return null; } })();
+      try{ localStorage.removeItem('frontier-runs'); }catch(e){}
+      newGame(4242, 'calm', 'valley', 'hold');
+      state.over = 'win';
+      recordRun(); recordRun();
+      const runs = loadRuns();
+      R.runs = { n: runs.length, seed: runs[0] && runs[0].seed };
+      R.checks.recordOnce = runs.length === 1;
+      R.checks.recordSeed = !!(runs[0] && runs[0].seed === 4242 && runs[0].win === true);
+
+      /* 8. 同种子必须复现同一张图：不然「同种子重打」只是换了个开局 */
+      const fp = ()=> tiles.reduce((a, t, i)=> a + t.g * ((i % 13) + 1), 0) + ':' + tiles.length;
+      newGame(4242, 'calm', 'valley', 'hold');
+      const fa = fp();
+      newGame(4242, 'calm', 'valley', 'hold');
+      R.checks.seedReplay = fa === fp();
+
+      /* 9. 存档要带上档案层 —— 不然读档之后结算只剩一行分数 */
+      state.snaps = [{ d:1, pop:3, wall:0 }];
+      state.kia = [{ n:'某人', d:1, by:'掠袭者', k:null }];
+      state.dayLog = { 1: [{ s:'测试', k:'' }] };
+      saveGame(2);
+      const raw = JSON.parse(localStorage.getItem(SLOT_KEYS[2]) || 'null');
+      try{ if(bak2) localStorage.setItem(SLOT_KEYS[2], bak2); else localStorage.removeItem(SLOT_KEYS[2]); }catch(e){}
+      R.checks.saveArch = !!(raw && Array.isArray(raw.snaps) && Array.isArray(raw.kia)
+                            && raw.dayLog && typeof raw.seed === 'number');
+
+      /* 10. 人口卡片要带个人史 —— 老存档没有 hist 字段，不能整个面板挂掉 */
+      R.checks.histGuard = typeof colPanel(state.cols[0]) === 'string';
+    }catch(e){ R.err = e.message + ' | ' + String(e.stack).split('\n').slice(0,2).join(' << '); }
+    RNG = savedRNG;
+    R.errs = (window.__errs || []).slice(0,6);
+    document.title = 'V22::' + JSON.stringify(R).replace(/\s+/g,' ');
+    return;
+  }
+
   if(q.has('v21')){
     const R = { checks:{} };
     const savedRNG = RNG;          // 断言里会临时顶掉主流，出任何岔子都要还回去
@@ -1326,6 +1444,32 @@ function init(){
     }
   }
   /* 终局演示：?end=1 直接看分档评价 */
+  /* 档案演示（v2.2）：?archshot=1 快进七天，选个人史最长的那位；
+     ?pm=1 直接打完一局看复盘。截图用，不影响正常开局。 */
+  if(q.has('archshot') || q.has('pm')){
+    window.__fastTest = true;
+    if(q.has('archshot')){
+      /* 天数可传：archshot=4 一般还没打到减员，适合截「个人史」 */
+      const dd = Math.max(1, Math.min(14, Number(q.get('archshot')) || 4));
+      window.__F.sim(1440 * dd);
+      state.paused = true;
+      /* 快进途中会撞上「商队到访」这类抉择弹窗 —— 不关掉就把画面挡死了 */
+      closeModal();
+      /* 默认不选人 —— 营地面板才看得到「今日瓶颈」；
+         要截个人史就加 &sel=1 */
+      if(q.has('sel')){
+        const pc = state.cols.slice().sort((a, b)=> (b.hist || []).length - (a.hist || []).length)[0];
+        if(pc) state.sel = { kind:'col', id: pc.id };
+      }
+      uiDirty.side = true; uiDirty.res = true; uiDirty.log = true;
+      if(q.has('hdump')) document.title = 'HDUMP::' + JSON.stringify(state.cols.map(c=> ({ n:c.name, h:c.hist })));
+    } else {
+      window.__F.sim(1440 * 17);
+      state.paused = true;
+      if(!state.over){ state.day = state.goalDay + 1; showEnd(true); }
+    }
+  }
+
   if(q.has('end')){
     window.__fastTest = true;
     window.__F.sim(240);

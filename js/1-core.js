@@ -649,6 +649,7 @@ function settleStages(force){
       state.res.wood += 18; state.res.stone += 10; state.res.food += 4;
       for(const c of state.cols) c.needs.mood = clamp((c.needs.mood||0) + 5, 0, 100);
       logEvent(`<b>${st.name}</b> 阶段达成 —— 补给送到，全营士气一振。`, 'good');
+      noteDay(`${st.name} 阶段达成`, 'good');
       showAlert(`${st.name} · 阶段达成`, false);
       SFX.done();
     } else {
@@ -656,6 +657,7 @@ function settleStages(force){
       const miss = st.need.filter(n=> !needOK(n))
         .map(n=> `${n.t}（现 ${stageValue(n.k)}）`).join('、');
       logEvent(`<b>${st.name}</b> 阶段没达标 —— 缺 ${miss}。结算会扣分。`, 'warn');
+      noteDay(`${st.name} 阶段没达标：缺 ${miss}`, 'bad');
     }
     state.stage.idx++;
     uiDirty.side = true;

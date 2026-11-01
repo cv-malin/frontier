@@ -342,6 +342,9 @@ function colPanel(c){
     }).join('');
 
   const vp = vigorPct(c) * 100;
+  /* 个人史（v2.2）：只显示最近 6 条，倒序 —— 玩家一般先关心「刚才怎么了」 */
+  const hist = (c.hist || []).slice().reverse().slice(0, 6)
+    .map(h=> `<div class="hrow ${h.k || ''}"><i>D${h.d}</i><span>${h.s}</span></div>`).join('');
 
   return `
   <div class="ph">
@@ -377,6 +380,11 @@ function colPanel(c){
             ? (countItem('herb') > 0 ? '会自己走去医务所处理伤口（消耗 1 份药草）。' : '医务所缺<b>药草</b>，先去采药。')
             : '伤口只能慢慢自愈。研究「草药学」后可建医务所。'}</div>`
         : ''}
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">这局的事 <span style="margin-left:auto;font-size:9.5px;letter-spacing:.04em;color:var(--ink3)">D${state.day}</span></div>
+      ${hist || '<div class="hint">还没什么可说的。</div>'}
     </div>
 
     <div class="sec">
@@ -565,6 +573,26 @@ function watchPanelHTML(){
     </div>`;
 }
 
+/* 今日瓶颈（v2.2）：侧栏顶上那一行。
+   玩家最常问的是「为什么墙不涨 / 人为什么不干活」，答案通常只有四个：
+   人倒了、没吃饱、劲用完了、没人去盖。写出来比加十条日志有用。 */
+function bottleneckHTML(){
+  const items = bottleneckNow();
+  let tone = 'ok';
+  for(const i of items){
+    if(i.k === 'bad'){ tone = 'bad'; break; }
+    if(i.k === 'warn') tone = 'warn';
+  }
+  const col = tone === 'bad' ? '#e2564d' : tone === 'warn' ? '#e8a33d' : '#6fbf8a';
+  return `<div class="bneck">
+    <span class="bk-dot" style="background:${col}"></span>
+    <div class="bk-tx">
+      <b style="color:${col}">今日瓶颈</b>
+      ${items.map(i=> `<span>${i.t}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
 function colonyPanel(){
   const goalPct = clamp((state.day-1)/state.goalDay*100, 0, 100);
   const avgV = state.cols.length
@@ -631,6 +659,7 @@ function colonyPanel(){
   <div class="ph"><h3>殖民地</h3><span class="tag ${raiders ? 'r' : 'a'}">${raiders ? '交战中' : '第 ' + state.day + ' 天'}</span></div>
   <div class="pb">
     ${crisisHTML}
+    ${bottleneckHTML()}
     <div class="sec">
       <div class="sec-h">野心 · ${ambDef().name}</div>
       <div class="hint" style="margin:-1px 0 9px;color:#b98a52">${ambDef().goal}</div>
@@ -1411,6 +1440,8 @@ function bindInput(){
     } else if(act === 'decline-crisis'){
       const cr = (state.crises || []).find(c=> c.state === 'wait');
       if(cr) declineCrisis(cr);
+    } else if(act === 'replay'){
+      window.replayRun(Number(t.dataset.i));
     } else if(act === 'skill'){
       /* 单人面板带 id，小队面板不带 —— 不带就整队一起放 */
       const id = Number(t.dataset.id);
@@ -1565,6 +1596,71 @@ window.startRun = ()=>{
   newGame(null, introSel.diff, introSel.scen, introSel.amb);
 };
 
+/* =====================================================================
+   运行档案（v2.2）
+   ---------------------------------------------------------------------
+   「一局结束 = 结束」是留存的第一杀手。这一节只做一件事：把最近 20 局
+   记下来，并且记得种子 —— 于是每一条战绩都能变回一个开局。
+   刻意不存快照：那是几百 KB 的事，而玩家真正想要的是「再来一次这一局」。
+   ===================================================================== */
+const RUN_KEY = 'frontier-runs';
+function loadRuns(){
+  try{
+    const a = JSON.parse(localStorage.getItem(RUN_KEY) || '[]');
+    return Array.isArray(a) ? a.filter(r=> r && typeof r.seed === 'number') : [];
+  }catch(e){ return []; }
+}
+function recordRun(){
+  if(state.recDone) return;
+  state.recDone = true;
+  const g = finalGrade();
+  const rec = {
+    ts: Date.now(), seed: state.seed || 0,
+    scen: state.scen, amb: state.amb, diff: state.diff,
+    day: Math.min(state.day, state.goalDay), goal: state.goalDay,
+    over: state.over || 'win',
+    win: state.over === 'win' || state.over === 'pyrrhic',
+    grade: g.grade, sc: g.sc,
+    pop: state.cols.length, deaths: state.stats.deaths || 0
+  };
+  try{
+    const a = loadRuns();
+    a.unshift(rec);
+    localStorage.setItem(RUN_KEY, JSON.stringify(a.slice(0, 20)));
+  }catch(e){}
+}
+window.replayRun = (i)=>{
+  const r = loadRuns()[i];
+  if(!r) return;
+  closeModal();
+  newGame(r.seed || 1, r.diff, r.scen, r.amb);
+  toast(`同一种子重开：第 ${r.seed} 号世界`);
+};
+
+function runsHTML(){
+  const runs = loadRuns();
+  if(!runs.length) return '';
+  const wins = runs.filter(r=> r.win).length;
+  const rows = runs.slice(0, 5).map((r, i)=>{
+    const sc = (SCEN[r.scen] || SCEN.valley).name;
+    const ab = (AMB[r.amb] || AMB.hold).name;
+    const endT = r.over === 'pyrrhic' ? '惨胜' : r.win ? '过关'
+               : r.over === 'ambfail' ? '野心未达' : '覆灭';
+    const col = r.over === 'pyrrhic' ? '#c08a4a' : r.win ? '#4ec9a5' : '#e2564d';
+    return `<div class="runrow">
+      <span class="rr-g" style="color:${col}">${r.grade}</span>
+      <div class="rr-t">
+        <b>${ab} · ${sc}</b>
+        <span>${endT} · 第 ${r.day}/${r.goal} 天 · ${r.sc} 分 · 种子 ${r.seed}</span>
+      </div>
+      <span class="rr-b" data-act="replay" data-i="${i}">同种子重打</span>
+    </div>`;
+  }).join('');
+  return `<h2 style="margin-top:18px">最近的对局
+      <span style="float:right;font-size:11px;font-weight:400;letter-spacing:.03em;color:var(--ink3)">${runs.length} 局 · 过关 ${wins}</span></h2>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">${rows}</div>`;
+}
+
 function showIntro(){
   introMode = 'intro';
   const sc = SCEN[introSel.scen] || SCEN.valley;
@@ -1593,6 +1689,7 @@ function showIntro(){
     <h2 style="margin-top:16px">难度</h2>
     ${diffPickHTML()}
     <p style="margin-top:12px;font-size:12px;color:var(--ink3)">目标：撑到第 <b>${introGoalDay()}</b> 天。随时按 <span class="kbd">H</span> 看完整说明。</p>
+    ${runsHTML()}
     <div class="foot" style="justify-content:space-between">
       <button class="btn" onclick="markSeen();closeModal();showHelp()">怎么玩</button>
       <button class="btn pri" onclick="startRun()">在 ${sc.name} 落脚 · ${ab.name}</button>
@@ -1664,6 +1761,15 @@ function showHelp(){
       <li><b>匪巢</b>：远征局地图上有三处。巢边有守卫时结构只吃 45% 伤害，得先清人；选中居民后左键点匪巢就是「拆巢」指令，15 小时内有效。每拆掉一处，后续袭击规模再降 16%。</li>
       <li><b>战术技能</b>：步枪「瞄准射击」下一枪 2.3 倍；手枪「速射」连开三枪；匕首「猛击」2.6 倍并把贴脸的人推开。冷却各自计算，不按也能打，按了明显省人。</li>
       <li><b>战术慢放</b>：场上敌人 ≥ 3 时自动切到 0.5 倍速，脱战恢复 —— 这是给你留出「框人、放技能」的时间。</li>
+    </ul>
+
+    <h2>v2.2 新增（这一版没有新内容，只让你看得见发生了什么）</h2>
+    <ul>
+      <li><b>今日瓶颈</b>：侧栏顶上那一条。人躺下了 / 没吃饱 / 工地停着没人盖 / 劲用完了 / 带伤 / 闲着 —— 按严重程度给你最多三条。想知道「为什么墙不涨」，先看这一行。</li>
+      <li><b>这局的事</b>：点开任何一个居民，面板里会列出这个人身上发生过什么（被谁打伤、倒下、用草药处理伤口、饿到发慌、落下旧伤）。同一件事一天只记一条，不会刷屏。</li>
+      <li><b>复盘</b>：结算页多了一节。它自己挑出局势掉得最狠的几天，用<b>当天真实发生过的事</b>解释 —— 不是打分，是回放。</li>
+      <li><b>阵亡名单</b>：谁死在第几天、死在谁手上。以前只有一个「阵亡 2 人」。</li>
+      <li><b>最近的对局</b>：开场页列出最近打过的几局，每条都能<b>用同一种子重打</b>。想验证「换个打法是不是就不一样」，不用再靠运气找同一个世界。</li>
     </ul>
 
     <h2>v2.1 新增（种田这条线从头到尾都能插手了）</h2>
@@ -1751,7 +1857,40 @@ const END_TXT = {
   pyrrhic: { t:'惨胜', s:'PYRRHIC', c:'#b8794a',
        d:'你要做的那件事成了。代价是最后一天没有一个人站着。多年以后有人在火堆边讲这件事，讲的人自己也说不清算不算赢。' }
 };
+/* 讣告（v2.2）：「阵亡 2 人」到「陈默死在第 7 天、死在掠袭者手里」，
+   中间差的这一层，就是玩家能不能把这一局讲成一个故事。 */
+function kiaHTML(){
+  const kia = state.kia || [];
+  if(!kia.length) return '';
+  return `<h2>阵亡</h2>
+    <div style="margin:2px 0 4px">
+      ${kia.map(k=> `<div class="hrow bad">
+        <i>D${k.d}</i><span><b>${k.n}</b> —— 死在${k.by}手上</span>
+      </div>`).join('')}
+    </div>`;
+}
+
+/* 复盘（v2.2）：扫出「势」掉得最狠的三天，用当天真实发生过的事解释。
+   注意它只说事实，不说「你该怎么做」—— 教玩家怎么打是攻略的事，
+   游戏该做的是把发生过什么讲清楚。 */
+function pmHTML(){
+  const pm = postMortem();
+  if(!pm.length) return '';
+  const rows = pm.map(r=> `
+    <div class="pm">
+      <div class="pm-h"><b>第 ${r.d} 天</b><span class="num ${r.dv < 0 ? 'down' : ''}">${r.dv > 0 ? '+' : ''}${r.dv}</span></div>
+      ${r.why.length
+        ? r.why.map(w=> `<div class="hrow ${w.k || ''}"><span>${w.s}</span></div>`).join('')
+        : `<div class="hrow"><span>这一天没留下记录。</span></div>`}
+    </div>`).join('');
+  return `<h2>复盘</h2>
+    <div style="font-size:12px;color:var(--ink3);margin:-2px 0 9px">势头掉得最狠的几天。这里只列当天发生过什么，怎么解释归你。</div>
+    ${rows}`;
+}
+
 function showEnd(win){
+  /* 一局只记一次。showEnd 会被「继续观察 / 换剧本」反复调用。 */
+  try{ recordRun(); }catch(e){ console.warn(e); }
   const g = finalGrade();
   const amb = ambDef();
   const pyrrhic = state.over === 'pyrrhic';
@@ -1805,6 +1944,10 @@ function showEnd(win){
       <div class="tile"><div class="ic">◈</div><div class="tx"><b>建造 ${state.stats.built} 座</b><span>伐木 ${Math.round(state.stats.wood)} · 采石 ${Math.round(state.stats.stone)}</span></div></div>
       <div class="tile"><div class="ic">◈</div><div class="tx"><b>遭遇袭击 ${state.stats.raids || 0} 人次</b><span>${g.passed >= 2 ? '防线基本立住了' : '防线还不够硬'}</span></div></div>
     </div>
+
+    ${kiaHTML()}
+    ${pmHTML()}
+
     <div class="foot">
       <button class="btn" onclick="hideEnd()">继续观察</button>
       ${win ? `<button class="btn" onclick="startEndless()">继续坚守 · 无尽</button>` : ''}
@@ -1930,6 +2073,10 @@ function saveGame(slot){
         weapon:c.weapon, shirt:c.shirt, skin:c.skin, hair:c.hair, speed:c.speed,
         breakT:c.breakT, carry:c.carry, sleepT:c.sleepT, moodBias:c.moodBias||0,
         wound:c.wound||0, flee:c.flee||0, fatigue:c.fatigue||0,
+        /* v2.2：干劲和个人史。干劲以前没入档，读档后半天的干劲是 undefined，
+           所有人被当成「没劲」处理 —— 表面上像是读档把节奏打乱了。 */
+        vigor: c.vigor,
+        hist: (c.hist || []).slice(),
         traits:(c.traits||[]).slice(), bonds:(c.bonds||[]).map(b=>({ id:b.id, v:b.v }))
       })),
       tiles: tiles.map(t=>[
@@ -1968,7 +2115,13 @@ function saveGame(slot){
       crises: (state.crises || []).map(cr=> ({ id:cr.id, dueDay:cr.dueDay, seen:cr.seen, state:cr.state })),
       act2: state.act2 || null,
       crop: state.crop || 'wheat',
-      thiefT: state.thiefT || 0
+      thiefT: state.thiefT || 0,
+      /* 档案（v2.2）：复盘要用的是「这一局发生过什么」，
+         不存的话读档之后结算只能给分数，给不出三天前的因果。 */
+      seed: state.seed || 0,
+      snaps: (state.snaps || []).slice(),
+      dayLog: state.dayLog || {},
+      kia: (state.kia || []).slice()
     };
     localStorage.setItem(SLOT_KEYS[si], JSON.stringify(data));
     curSlot = si;
@@ -2052,12 +2205,20 @@ function restore(d){
     ? d.crises.filter(o=> o && crisisDef(o.id))
              .map(o=> ({ id:o.id, dueDay:o.dueDay | 0, seen:!!o.seen, state:o.state || 'wait' }))
     : [];
+  /* 档案（v2.2）。老存档没有这层 —— 空着起步，复盘会退化成「只有分数」，
+     而不是拿半截数据算出一条错的教训。 */
+  state.seed = d.seed || 0;
+  state.snaps = Array.isArray(d.snaps) ? d.snaps.filter(o=> o && typeof o.d === 'number') : [];
+  state.dayLog = (d.dayLog && typeof d.dayLog === 'object') ? d.dayLog : {};
+  state.kia = Array.isArray(d.kia) ? d.kia : [];
   state.cmd = null;
   /* v2.1 农田 */
   state.crop = (d.crop && CROPS[d.crop]) ? d.crop : 'wheat';
   state.thiefT = d.thiefT || 0;
   state.over = null; state.endAck = false; state.raiders = []; state.fx = []; state.decals = []; state.log = [];
   state.paused = false; state.speed = 1;
+  /* 读档等于开始新的一局：如果不清，上一局已经记过的账会挡住这一局 */
+  state.recDone = false;
 
   tiles = d.tiles.map((a,i)=>{
     const t = { g:a[0], v:rnd(), h:(a[9]||0)/100, m:(a[10]||0)/100, depth:0, shore:false,
@@ -2094,6 +2255,8 @@ function restore(d){
     c.onWatch = false; c.fatigue = s.fatigue || 0;
     /* v2.0 干劲：老存档没有这个字段，按满值兜底 */
     c.vigor = (typeof s.vigor === 'number') ? s.vigor : VIGOR_MAX;
+    /* v2.2 个人史：老存档没有，给个空表 —— 否则 noteHist 会一直静默失败 */
+    if(!Array.isArray(c.hist)) c.hist = [];
     setupWeapon(c);
     c.maxHp = s.maxHp;
     return c;
