@@ -1,0 +1,19 @@
+# 截图与历史版本快照：体积大、可再生，不进库
+shots-v*/
+shots/
+_backup-v*.html
+*.png
+*.jpg
+
+# PRD 的 PDF 是从 HTML 打的，只留 HTML
+*.pdf
+
+# 工具临时产物
+_tools/__pycache__/
+*.tmp
+*.log
+
+# 无头浏览器临时 profile（缓存、db、崩溃报告，几万个文件）
+_tools/prof*/
+_tools/_backup-v*/
+*.db

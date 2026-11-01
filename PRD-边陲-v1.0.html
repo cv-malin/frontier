@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>边陲 FRONTIER · 产品需求文档（PRD）v1.0</title>
+<style>
+:root{
+  --ink:#1a1a17; --ink2:#4a4a44; --ink3:#83837a; --ink4:#a8a89e;
+  --line:#e3dfd7; --line2:#d3cdc1; --paper:#ffffff; --bg:#f4f2ed;
+  --moss:#2f6b4f; --moss-l:#eaf3ee; --rust:#a9552a; --rust-l:#fbeee6;
+  --sand:#9c7a1e; --sand-l:#fbf5e2; --sky:#356a96; --sky-l:#eaf1f7;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.78 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+.wrap{display:grid; grid-template-columns:238px minmax(0,1fr); gap:0; max-width:1280px; margin:0 auto;}
+
+/* ---------- 目录 ---------- */
+.nav{
+  position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  padding:34px 20px 40px 26px; border-right:1px solid var(--line);
+  background:var(--bg); font-size:12.5px;
+}
+.nav .brand{font-weight:800; letter-spacing:.14em; font-size:11px; color:var(--ink3); margin-bottom:14px}
+.nav .bt{font-size:14px; font-weight:800; margin-bottom:2px; letter-spacing:.02em}
+.nav .bs{font-size:11px; color:var(--ink3); margin-bottom:22px; letter-spacing:.06em}
+.nav a{display:block; color:var(--ink2); text-decoration:none; padding:3.5px 8px 3.5px 10px;
+  border-left:2px solid transparent; border-radius:0 4px 4px 0; transition:.15s}
+.nav a:hover{background:#ecebe5; color:var(--moss)}
+.nav a.sub{padding-left:22px; font-size:12px; color:var(--ink3)}
+.nav a.on{border-left-color:var(--moss); background:#ecebe5; color:var(--moss); font-weight:700}
+.nav .grp{margin-top:14px; margin-bottom:3px; font-size:10.5px; font-weight:800; letter-spacing:.16em; color:var(--ink4)}
+
+/* ---------- 正文 ---------- */
+.doc{background:var(--paper); min-height:100vh; padding:0 0 90px; box-shadow:0 0 60px rgba(40,35,25,.05)}
+.inner{max-width:860px; margin:0 auto; padding:0 56px}
+
+/* 封面 */
+.cover{padding:74px 56px 44px; border-bottom:3px double var(--line2); background:
+  linear-gradient(180deg,#fbfaf7 0%,#fff 100%)}
+.cover .kicker{font-size:11px; letter-spacing:.34em; color:var(--rust); font-weight:800; margin-bottom:26px}
+.cover h1{margin:0; font-size:56px; line-height:1.02; letter-spacing:-.02em; font-weight:800;
+  font-family:"Songti SC","Source Han Serif SC",Georgia,serif}
+.cover h1 span{display:block; font-size:15px; letter-spacing:.42em; color:var(--ink3);
+  font-family:var(--mono); font-weight:600; margin-top:16px}
+.cover .tag{margin:26px 0 34px; font-size:16.5px; color:var(--ink2); max-width:600px; line-height:1.85}
+.cover .tag b{color:var(--ink); border-bottom:2px solid var(--sand); padding-bottom:1px}
+
+.meta{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:8px; overflow:hidden}
+.meta>div{background:#fff; padding:12px 14px}
+.meta .k{font-size:10px; letter-spacing:.14em; color:var(--ink4); font-weight:700; margin-bottom:3px}
+.meta .v{font-size:13px; font-weight:700; font-family:var(--mono)}
+
+/* 标题层级 */
+h2{font-size:25px; line-height:1.35; margin:56px 0 6px; font-weight:800; letter-spacing:-.01em;
+  padding-top:12px; border-top:1px solid var(--line)}
+h2 .no{font-family:var(--mono); font-size:13px; color:var(--rust); font-weight:700;
+  display:block; letter-spacing:.1em; margin-bottom:9px}
+h3{font-size:17px; margin:30px 0 8px; font-weight:800}
+h4{font-size:14px; margin:20px 0 6px; font-weight:800; color:var(--ink2)}
+p{margin:10px 0}
+ul,ol{margin:10px 0; padding-left:22px}
+li{margin:5px 0}
+b,strong{font-weight:800}
+a{color:var(--sky)}
+code{font-family:var(--mono); font-size:13px; background:#f3f1ec; padding:1.5px 5px;
+  border-radius:4px; color:#8a4a1e; border:1px solid #eae6de}
+hr{border:0; border-top:1px solid var(--line); margin:34px 0}
+
+/* 表格 */
+table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:13px}
+th{background:#faf8f3; text-align:left; font-weight:800; color:var(--ink2); font-size:11.5px;
+  letter-spacing:.06em; padding:9px 11px; border-bottom:2px solid var(--line2); white-space:nowrap}
+td{padding:9px 11px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.65}
+tr:last-child td{border-bottom:1px solid var(--line2)}
+tbody tr:hover{background:#fcfbf8}
+td.num,th.num{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right}
+td.c{text-align:center}
+caption{caption-side:bottom; font-size:11.5px; color:var(--ink3); text-align:left; padding-top:7px}
+table.compact td,table.compact th{padding:6.5px 9px; font-size:12.5px}
+
+/* 标注块 */
+.note,.warn,.tbd{border-radius:0 8px 8px 0; padding:13px 17px; margin:18px 0; font-size:13.5px; line-height:1.75}
+.note{background:var(--moss-l); border-left:3px solid var(--moss)}
+.warn{background:var(--rust-l); border-left:3px solid var(--rust)}
+.tbd{background:var(--sand-l); border:1px dashed #d8c68e; border-left:3px solid var(--sand)}
+.note .t,.warn .t,.tbd .t{display:block; font-weight:800; font-size:11px; letter-spacing:.14em;
+  margin-bottom:5px; text-transform:uppercase}
+.note .t{color:var(--moss)} .warn .t{color:var(--rust)} .tbd .t{color:var(--sand)}
+
+/* 徽章 */
+.b{display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.05em;
+  padding:1.5px 7px; border-radius:20px; vertical-align:1.5px; white-space:nowrap}
+.b-ship{background:#e3f0e8; color:#256044; border:1px solid #c6e0d1}
+.b-iter{background:#fbf1dc; color:#8a6412; border:1px solid #eddfb8}
+.b-out{background:#efeee9; color:#77776e; border:1px solid #e0ded5}
+.b-new{background:#e8eef7; color:#2c5a86; border:1px solid #ccdbeb}
+.b-p0{background:#f7e6e0; color:#96411f; border:1px solid #eccfc2}
+
+/* 三层循环图 */
+.loop{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:22px 0 8px}
+.loop .it{background:#fbfaf7; border:1px solid var(--line); border-radius:10px; padding:15px 16px; position:relative}
+.loop .it:not(:last-child)::after{content:"→"; position:absolute; right:-12px; top:50%;
+  transform:translateY(-50%); color:var(--ink4); font-size:15px; background:var(--paper); padding:0 2px}
+.loop .n{font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--rust); font-weight:800}
+.loop h5{margin:5px 0 7px; font-size:15px; font-weight:800}
+.loop p{margin:0; font-size:12.5px; color:var(--ink2); line-height:1.7}
+
+/* 线框 */
+.wf{border:1px solid var(--line2); border-radius:10px; overflow:hidden; margin:20px 0 6px;
+  background:#20242a; font-size:10.5px; color:#c9d2dc; user-select:none}
+.wf .r1{display:flex; align-items:center; gap:7px; padding:7px 10px; background:#181c21;
+  border-bottom:1px solid #2f3640; flex-wrap:wrap}
+.wf .pill{background:#2a3138; border:1px solid #3a424c; border-radius:5px; padding:2px 7px;
+  font-family:var(--mono); font-size:10px}
+.wf .pill.g{color:#8fd08a; border-color:#3c5c3c; background:#1e2a20}
+.wf .pill.y{color:#e8c46a; border-color:#5c4f2a; background:#2a2519}
+.wf .pill.r{color:#eb8a80; border-color:#5c3230; background:#2a1c1b}
+.wf .r2{display:grid; grid-template-columns:1fr 210px; height:250px}
+.wf .cv{position:relative; background:#33402f; border-right:1px solid #2f3640; overflow:hidden}
+.wf .cv .lab{position:absolute; left:9px; bottom:7px; font-family:var(--mono); font-size:9.5px;
+  color:#c3d0dc; background:rgba(16,20,24,.90); padding:3px 7px; border-radius:4px;
+  border:1px solid rgba(255,255,255,.08)}
+.wf .cv .hud{position:absolute; left:9px; top:9px; font-family:var(--mono); font-size:9.5px;
+  color:#d8e4ef; background:rgba(16,20,24,.88); padding:4px 8px; border-radius:4px; line-height:1.75;
+  border:1px solid rgba(255,255,255,.08)}
+.wf .side{background:#1b1f24; padding:9px 10px; font-size:10px; line-height:1.9}
+.wf .side .av{display:flex; gap:7px; align-items:center; margin-bottom:8px}
+.wf .side .av i{width:22px; height:22px; border-radius:50%; background:#4f7fd4; display:block;
+  font-style:normal; text-align:center; line-height:22px; font-size:10px; color:#fff; font-weight:800}
+.wf .side .bar{height:3px; border-radius:2px; background:#39414b; margin:3px 0 6px; position:relative}
+.wf .side .bar i{display:block; height:3px; border-radius:2px; background:#c98f3f; width:66%}
+.wf .side .bar.b2 i{background:#5aa0f0; width:81%}
+.wf .side .bar.b3 i{background:#57c07a; width:58%}
+.wf .r3{display:flex; gap:6px; padding:8px 10px; background:#181c21; border-top:1px solid #2f3640; flex-wrap:wrap}
+.wf .bt{background:#242b32; border:1px solid #343d47; border-radius:5px; padding:4px 9px;
+  font-size:10px; display:flex; gap:6px; align-items:center}
+.wf .bt em{font-family:var(--mono); font-style:normal; font-size:9px; color:#7f8c99}
+.wf cap{display:block}
+
+/* 公式 */
+.fml{background:#faf8f3; border:1px solid var(--line); border-radius:8px; padding:13px 17px;
+  margin:14px 0; font-family:var(--mono); font-size:12.5px; line-height:2; color:#3b3b34; overflow-x:auto}
+.fml b{color:var(--rust); font-family:-apple-system,"Microsoft YaHei",sans-serif; font-weight:700}
+
+/* KPI 卡 */
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:18px 0}
+.kpis>div{background:#fff; padding:14px 13px}
+.kpis .v{font-size:19px; font-weight:800; font-family:var(--mono); letter-spacing:-.02em; color:var(--moss)}
+.kpis .k{font-size:10.5px; color:var(--ink3); margin-top:3px; line-height:1.5}
+
+.foot{margin-top:70px; padding-top:22px; border-top:3px double var(--line2);
+  font-size:11.5px; color:var(--ink3); display:flex; justify-content:space-between; gap:20px}
+
+/* 打印 */
+@media print{
+  @page{size:A4; margin:16mm 15mm}
+  body{background:#fff; font-size:10.5pt}
+  .wrap{display:block; max-width:none}
+  .nav{display:none}
+  .doc{box-shadow:none; padding:0}
+  .inner,.cover{padding-left:0; padding-right:0; max-width:none}
+  .cover{padding-top:0}
+  h2{page-break-after:avoid; margin-top:28px}
+  h3,h4{page-break-after:avoid}
+  table,.kpis,.wf,.fml,.note,.warn,.tbd{page-break-inside:avoid}
+  a{color:inherit; text-decoration:none}
+}
+@media (max-width:1080px){
+  .wrap{grid-template-columns:1fr}
+  .nav{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line); padding:18px 20px}
+  .nav a{display:inline-block; border-left:0; padding:4px 8px}
+  .inner,.cover{padding-left:26px; padding-right:26px}
+  .meta,.kpis{grid-template-columns:repeat(2,1fr)}
+  .loop{grid-template-columns:1fr}
+  .loop .it::after{display:none}
+  .cover h1{font-size:38px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="nav" id="nav">
+  <div class="brand">PRD</div>
+  <div class="bt">边陲 FRONTIER</div>
+  <div class="bs">v1.0 · 2026-10-27</div>
+
+  <div class="grp">定义</div>
+  <a href="#s1">1 摘要</a>
+  <a href="#s2">2 产品定义</a>
+  <a href="#s3">3 竞品与定位</a>
+  <a href="#s4">4 核心循环</a>
+
+  <div class="grp">规格</div>
+  <a href="#s5">5 系统规格</a>
+  <a href="#s5-3" class="sub">5.3 居民与需求</a>
+  <a href="#s5-5" class="sub">5.5 工作调度</a>
+  <a href="#s5-10" class="sub">5.10 战斗</a>
+  <a href="#s5-11" class="sub">5.11 威胁与事件</a>
+  <a href="#s6">6 界面与交互</a>
+
+  <div class="grp">质量</div>
+  <a href="#s7">7 数值与平衡</a>
+  <a href="#s8">8 非功能需求</a>
+  <a href="#s9">9 验收标准</a>
+  <a href="#s10">10 度量与埋点</a>
+
+  <div class="grp">交付</div>
+  <a href="#s11">11 范围与里程碑</a>
+  <a href="#s12">12 风险</a>
+  <a href="#s13">13 开放问题</a>
+  <a href="#s14">14 附录</a>
+</nav>
+
+<main class="doc">
+
+<header class="cover">
+  <div class="kicker">产品需求文档 · PRODUCT REQUIREMENTS DOCUMENT</div>
+  <h1>边陲<span>F R O N T I E R</span></h1>
+  <p class="tag">
+    一款<b>零安装、单文件、可在浏览器直接游玩</b>的殖民地生存模拟。
+    玩家不操控任何一个人，而是制定规则：圈地、建造、排产、设防——
+    然后看着三名幸存者按你设计的秩序活下去，或者死掉。
+  </p>
+  <div class="meta">
+    <div><div class="k">文档版本</div><div class="v">v1.0</div></div>
+    <div><div class="k">产品版本</div><div class="v">1.0.0</div></div>
+    <div><div class="k">状态</div><div class="v">已实现 · 待扩展</div></div>
+    <div><div class="k">更新日期</div><div class="v">2026-10-27</div></div>
+  </div>
+</header>
+
+<div class="inner">
+
+<!-- ============================================================ 1 -->
+<h2 id="s1"><span class="no">01 / SUMMARY</span>摘要</h2>
+
+<p>本文档定义《边陲》v1.0 的完整产品规格。它是<b>已实现版本的规格化描述 + 下一阶段的范围基线</b>：所有标注 <span class="b b-ship">已实现</span> 的条目均可在当前构建中验收，标注 <span class="b b-iter">迭代中</span> 与 <span class="b b-out">暂不做</span> 的条目用于划清边界。</p>
+
+<div class="kpis">
+  <div><div class="v">12 天</div><div class="k">单局目标时长<br>约 25–40 分钟</div></div>
+  <div><div class="v">3 → 7 人</div><div class="k">殖民地人口<br>起始 3，上限 7</div></div>
+  <div><div class="v">6 种</div><div class="k">可建造物<br>墙/门/床/火/炮/桌</div></div>
+  <div><div class="v">0 依赖</div><div class="k">单 HTML 文件<br>离线可运行</div></div>
+</div>
+
+<p><b>三句话讲清产品：</b></p>
+<ol>
+  <li><b>它是"设计游戏"，不是"操作游戏"。</b>居民全自动工作，玩家的输入只有四类：<em>圈区域</em>、<em>放建筑</em>、<em>调时间</em>、<em>看信息</em>。乐趣来自"我设计的秩序是否成立"。</li>
+  <li><b>它有明确的输赢。</b>撑过 12 天即胜利，全员倒地即失败。这使它对新手有终点、对老手有可重复挑战的空间。</li>
+  <li><b>它的门槛是零。</b>双击打开即玩，无账号、无下载、无联网。这让它适合作为"发给别人就能玩"的作品，而不是需要安装的独立游戏。</li>
+</ol>
+
+<div class="note">
+  <span class="t">本 PRD 的写法约定</span>
+  每条需求带唯一 ID（<code>FR-x.y</code> / <code>AC-x</code>），可直接作为开发任务与测试用例的锚点。数值一律标注单位与时间基准（游戏内分钟 / 格 / 像素）。凡涉及"手感"的判断，均给出可测量的替代指标，避免"感觉不对"这类无法验收的表述。
+</div>
+
+<!-- ============================================================ 2 -->
+<h2 id="s2"><span class="no">02 / DEFINITION</span>产品定义</h2>
+
+<h3>2.1 一句话定义</h3>
+<p style="font-size:16.5px; line-height:1.85; padding:16px 20px; background:#fbfaf7; border-left:3px solid var(--moss); border-radius:0 8px 8px 0; margin:16px 0">
+《边陲》是一款<b>以"规则设计"为核心动词</b>的轻量殖民地模拟游戏：玩家用有限的石料与木料规划一块边境落脚点，三名自动工作的幸存者在其中采集、耕作、建造、战斗，玩家需要在 12 天内让这个系统不崩溃。
+</p>
+
+<h3>2.2 设计目标</h3>
+<p>目标按优先级排列，冲突时上位优先。</p>
+<table>
+  <thead><tr><th style="width:34px">#</th><th style="width:150px">目标</th><th>说明</th><th style="width:200px">可测指标</th></tr></thead>
+  <tbody>
+    <tr><td class="num">G1</td><td><b>30 秒上手</b></td><td>不读说明也能在 30 秒内完成第一次有效操作（圈一块仓库区或放一张床）。首次游玩不需外部教程。</td><td>首局首个有效操作 ≤ 30s；跳过引导比例 &lt; 25%</td></tr>
+    <tr><td class="num">G2</td><td><b>因果可读</b></td><td>任何一次失败都必须能追溯到玩家可理解的原因（缺料 / 缺人 / 缺墙 / 心情崩），不允许"莫名其妙就输了"。</td><td>失败局中，玩家能复述原因的比例 ≥ 80%</td></tr>
+    <tr><td class="num">G3</td><td><b>决策有张力</b></td><td>石料同时是"墙"和"炮塔"的原料，人力同时是"生产"和"建设"的资源。每一局都应出现至少一次真实取舍。</td><td>单局资源紧张（某资源 0 库存）≥ 2 次</td></tr>
+    <tr><td class="num">G4</td><td><b>失败可复盘</b></td><td>失败后玩家应立刻想说"下一次我先把墙修起来"，而不是关掉页面。</td><td>首局失败后重开率 ≥ 50%</td></tr>
+    <tr><td class="num">G5</td><td><b>零门槛分发</b></td><td>一个文件，双击即玩；离线可用；无外部请求。</td><td>文件数 = 1；外部请求数 = 0；冷启动 &lt; 1s</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3 非目标（明确不做）</h3>
+<p>写清"不做什么"比写"做什么"更能保护排期。以下为本版<b>主动放弃</b>的方向：</p>
+<table class="compact">
+  <thead><tr><th style="width:120px">非目标</th><th>原因</th></tr></thead>
+  <tbody>
+    <tr><td>多人 / 联机</td><td>与"单文件离线"的核心约束冲突，需要服务端，收益不匹配成本。</td></tr>
+    <tr><td>自由建造的 3D 视角</td><td>俯视 2D 已足够表达"布局决策"，3D 会让数值可读性下降。</td></tr>
+    <tr><td>长线养成（科技树 / 跨局继承）</td><td>v1.0 定位是"一局 30 分钟的完整闭环"，长线会稀释单局张力。</td></tr>
+    <tr><td>剧情 / 对话 / 角色叙事</td><td>居民是"系统单元"而非"角色"，叙事会引导玩家去做情感投射，与设计游戏的核心动词竞争注意力。</td></tr>
+    <tr><td>移动端触屏优化</td><td>本版仅保证桌面浏览器可用；触屏交互另立需求（见 §11.3）。</td></tr>
+    <tr><td>Mod / 脚本扩展</td><td>单文件架构下无稳定扩展点，强行支持会破坏零依赖约束。</td></tr>
+  </tbody>
+</table>
+
+<h3>2.4 目标用户</h3>
+<table>
+  <thead><tr><th style="width:130px">角色</th><th style="width:170px">特征</th><th>核心诉求</th><th style="width:120px">占比预估</th></tr></thead>
+  <tbody>
+    <tr><td><b>P1 · 模拟游戏老手</b></td><td>玩过《环世界》《缺氧》《放逐之城》，熟悉"优先级 + 需求"模型</td><td>要的是<b>可优化的系统</b>：布局效率、资源曲线、防守容错。会主动找最优解。</td><td class="c">35%</td></tr>
+    <tr><td><b>P2 · 好奇的轻度玩家</b></td><td>不玩硬核模拟，被"网页一点就开"吸引</td><td>要的是<b>低门槛的成就感</b>：看得懂在发生什么，第一次能赢。</td><td class="c">45%</td></tr>
+    <tr><td><b>P3 · 作品浏览者</b></td><td>通过分享链接进来，停留时间短</td><td>要的是<b>30 秒内明白"这是什么"</b>：截图好看、引导清楚、能立刻动手。</td><td class="c">20%</td></tr>
+  </tbody>
+</table>
+<p class="note" style="margin-top:12px">P2 是设计基准用户。所有引导、文案、默认参数都按"没玩过模拟游戏的人"校验；P1 的深度需求通过<b>可读的数值与可优化的布局</b>满足，而不是增加系统复杂度。</p>
+
+<h3>2.5 体验支柱</h3>
+<div class="loop">
+  <div class="it"><div class="n">PILLAR 01</div><h5>秩序感</h5><p>玩家画下的每一块区域、放下的每一堵墙，都会立刻改变居民的行为路径。世界对规划有<b>即时且可见</b>的响应。</p></div>
+  <div class="it"><div class="n">PILLAR 02</div><h5>紧绷感</h5><p>资源永远差一点。石料要么修墙、要么造炮；人要么生产、要么建设。任何时候都不能"全都做"。</p></div>
+  <div class="it"><div class="n">PILLAR 03</div><h5>可读性</h5><p>屏幕上的每个数字、每条日志、每根血条都在回答"为什么"。信息不做隐藏，只做分层。</p></div>
+</div>
+<p style="font-size:12.5px; color:var(--ink3); margin-top:10px">三条支柱互为约束：为了<b>可读性</b>必须减少系统数量；为了<b>紧绷感</b>必须让资源稀缺；为了<b>秩序感</b>必须让玩家操作有快速反馈。任何新功能若同时违反两条以上，应当被拒绝。</p>
+
+<!-- ============================================================ 3 -->
+<h2 id="s3"><span class="no">03 / POSITIONING</span>竞品与定位</h2>
+
+<p>《边陲》不与《环世界》竞争深度，而是竞争<b>触达成本</b>。参照系如下：</p>
+
+<table>
+  <thead><tr><th style="width:150px">维度</th><th style="width:150px">环世界 RimWorld</th><th style="width:150px">缺氧 Oxygen Not Included</th><th style="width:130px">放逐之城</th><th>边陲（本产品）</th></tr></thead>
+  <tbody>
+    <tr><td>单局时长</td><td>10–100 小时</td><td>20–60 小时</td><td>5–15 小时</td><td><b>25–40 分钟</b></td></tr>
+    <tr><td>上手门槛</td><td>高（需 1–2 小时）</td><td>很高（需查攻略）</td><td>中</td><td><b>低（30 秒）</b></td></tr>
+    <tr><td>获取方式</td><td>Steam 付费下载</td><td>Steam 付费下载</td><td>Steam 付费下载</td><td><b>打开网页</b></td></tr>
+    <tr><td>核心动词</td><td>管理 + 应对随机事件</td><td>物理系统调参</td><td>城市布局规划</td><td><b>规则设计</b></td></tr>
+    <tr><td>系统数量</td><td>极多（100+）</td><td>多（物理/热/气体）</td><td>中</td><td><b>少而闭合（6 建筑 / 4 资源 / 3 需求）</b></td></tr>
+    <tr><td>失败惩罚</td><td>渐进、可挽回</td><td>渐进、可挽回</td><td>渐进</td><td><b>明确终局（12 天）</b></td></tr>
+  </tbody>
+</table>
+
+<h3>3.1 差异化定位</h3>
+<p>一句话：<b>"用 12 天讲完一个完整的殖民地故事，用一个 HTML 文件送到任何人面前。"</b></p>
+<ul>
+  <li><b>对 P1（老手）</b>：提供被压缩到极致的系统——每个数字都能被优化，但没有冗余机制需要学习。是"通勤路上可以打一局"的环世界。</li>
+  <li><b>对 P2（轻度）</b>：提供有限目标 + 强引导。不需要理解"优先级矩阵"，只需要理解"石头要用来修墙"。</li>
+  <li><b>对 P3（浏览者）</b>：提供 30 秒内可完成的第一个有意义操作，以及一张能当封面的中局截图。</li>
+</ul>
+
+<div class="warn">
+  <span class="t">定位风险</span>
+  压缩系统会同时削弱两端的体验：老手可能觉得"太浅"，轻度玩家仍可能被"需求条"吓退。<b>缓解方式</b>：把深度放在"布局效率"（可无限优化的空间）而非"机制数量"；把门槛放在"引导文案"（可迭代）而非"简化机制"（会伤及支柱）。
+</div>
+
+<!-- ============================================================ 4 -->
+<h2 id="s4"><span class="no">04 / CORE LOOP</span>核心循环</h2>
+
+<h3>4.1 三层循环</h3>
+<p>本作刻意把循环切成三层，对应三种不同的思考节奏。玩家在 30 分钟内会反复穿梭于三层之间，这是"不累但不无聊"的关键。</p>
+
+<div class="loop">
+  <div class="it">
+    <div class="n">LOOP A · 秒级</div><h5>观察与纠错</h5>
+    <p>看到某人在发呆 / 某个需求条变红 → 点开他 → 判断原因（没活干？没料？路被堵？）→ 补一个区域或建筑。<br><b>时长：5–20 秒 / 次</b></p>
+  </div>
+  <div class="it">
+    <div class="n">LOOP B · 分钟级</div><h5>生产与建设</h5>
+    <p>缺木 → 砍树获得木 → 木变床/门/餐桌 → 生活品质上升 → 心情上升 → 工作效率上升。<br><b>时长：2–5 分钟 / 次</b></p>
+  </div>
+  <div class="it">
+    <div class="n">LOOP C · 天级</div><h5>威胁与备战</h5>
+    <p>日志提示"第 N 天有袭击" → 修墙、造炮、备粮 → 撑过袭击 → 清点损失 → 进入下一天。<br><b>时长：3–6 分钟 / 天</b></p>
+  </div>
+</div>
+
+<h3>4.2 一个游戏日的时间切片</h3>
+<p>以第 4 天（已有围墙、首次双人袭击）为例，说明玩家注意力如何被分配：</p>
+<table class="compact">
+  <thead><tr><th style="width:96px">游戏时刻</th><th style="width:130px">系统事件</th><th>玩家应做的事</th><th style="width:150px">对应循环</th></tr></thead>
+  <tbody>
+    <tr><td class="num">06:00</td><td>新的一天开始，天气刷新</td><td>看日志：今天是否袭击日？天气是否降雨（作物 +50% 生长）？</td><td>LOOP C</td></tr>
+    <tr><td class="num">06:00–08:00</td><td>居民陆续起床（精力 &gt; 96 或已过 08:00 且 &gt; 78）</td><td>检查夜间是否有需求告急；补种农田。</td><td>LOOP A</td></tr>
+    <tr><td class="num">08:00–12:00</td><td>工作高峰：砍伐、采矿、建造</td><td>摆新建筑蓝图；确认石料是否够修下一段墙。</td><td>LOOP B</td></tr>
+    <tr><td class="num">12:00–14:00</td><td>饥饿值跌破 30，居民自动进食</td><td>若餐食耗尽会吃生食（心情 −5），需补篝火与烹饪。</td><td>LOOP A / B</td></tr>
+    <tr><td class="num">14:00–18:00</td><td>持续生产；作物生长</td><td>收浆果、看农田进度、把散落物资纳入仓库区。</td><td>LOOP B</td></tr>
+    <tr><td class="num">18:00–20:00</td><td>光照渐暗（20:00 全暗）</td><td>确认篝火位置覆盖居住区（4 格内 +5 心情）。</td><td>LOOP A</td></tr>
+    <tr><td class="num">20:00–06:00</td><td>夜间：居民入睡，画面压暗</td><td>唯一可做的是"备战"——修墙、补炮、看资源曲线。</td><td>LOOP C</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="t">设计要点：夜间不做"无事可做"</span>
+  夜间（20:00–06:00）居民全部入睡，生产停滞。这段时间被刻意保留为<b>纯规划时间</b>：玩家可以把视角拉到边境检查围墙缺口、预摆明天的建筑蓝图。它制造了"白天忙、晚上想"的节奏，也避免了玩家在居民睡觉时无事可看而退出。
+</div>
+
+<h3>4.3 玩家输入预算</h3>
+<p>为保证"设计游戏"的定位，任何一分钟内的有效操作数应落在以下区间。这是<b>反向约束</b>：如果某个系统迫使玩家每分钟点击 10 次，说明它设计错了，应当改成自动化。</p>
+<table class="compact">
+  <thead><tr><th style="width:150px">阶段</th><th class="num" style="width:110px">操作 / 分钟</th><th>主要操作类型</th></tr></thead>
+  <tbody>
+    <tr><td>开局（D1）</td><td class="num">4–8</td><td>圈仓库区、放床、放篝火、开农田</td></tr>
+    <tr><td>建设期（D2–D5）</td><td class="num">2–5</td><td>连续摆墙、补门、造炮</td></tr>
+    <tr><td>稳态（D6–D10）</td><td class="num">1–3</td><td>补漏、看信息、临时调整</td></tr>
+    <tr><td>高压（袭击中）</td><td class="num">0–2</td><td>几乎不操作，只看结果（这是设计意图）</td></tr>
+  </tbody>
+</table>
+<p style="font-size:13px; color:var(--ink3)">注意最后一行：<b>袭击期间玩家几乎无事可做</b>是刻意的。战斗的胜负在袭击开始前就由"墙、炮、人"决定了。玩家在战斗中唯一能做的是观察，这正是"设计游戏"的核心表达——你无法临场救火，只能提前设计。</p>
+
+</div><!-- /inner part1 -->
+
+<!-- ============================================================ 5 -->
+<div class="inner">
+
+<h2 id="s5"><span class="no">05 / SYSTEM SPEC</span>系统规格</h2>
+
+<p>本章逐系统给出规格。每个系统包含：<b>职责</b>（它解决什么问题）、<b>规则</b>（可验收的实现约束）、<b>参数</b>（数值表）。参数表中标注 <span class="b b-ship">已实现</span> 的为当前构建实测值，可直接作为回归基线。</p>
+
+<!-- ---------------- 5.1 ---------------- -->
+<h3>5.1 世界与地图 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>提供一个足够大、但不至于需要滚动探索的封闭空间；保证关键资源可达，并保证威胁有公平的进入路径。</p>
+
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.1.1</b> 地图尺寸</td><td>58 × 42 格，共 2436 格；单格 34 CSS 像素。地图为硬边界，单位不可越出。</td></tr>
+    <tr><td><b>FR-5.1.2</b> 地形种类</td><td>5 种：草地 <code>GRASS</code>、沙地 <code>SAND</code>、泥土 <code>DIRT</code>、水面 <code>WATER</code>、岩体 <code>ROCK</code>。水面与岩体不可通行、不可建造。</td></tr>
+    <tr><td><b>FR-5.1.3</b> 程序化生成</td><td>基于 4 组独立噪声（地形/岩体/植被/水塘）+ 播种随机数。<b>同一种子必须生成完全相同的世界</b>，用于复现与分享。</td></tr>
+    <tr><td><b>FR-5.1.4</b> 出生地保护</td><td>地图中心半径 7.5 格内强制清空为草地（移除水面与岩体），半径 5.2 格内不生成植被。保证开局有足够的干净建造空间。</td></tr>
+    <tr><td><b>FR-5.1.5</b> 资源分布</td><td>岩体成片聚集于地图上部（左上角为主要矿区）；树木与灌木按噪声密度散布于草地/沙地。距中心 5.2 格内无植被。</td></tr>
+    <tr><td><b>FR-5.1.6</b> 初始散落物资</td><td>中心 3 格范围内必有 2 处散落物：60 木材 + 10 食物。与仓库区初始物资（见 FR-5.8.2）共同构成开局资源。</td></tr>
+    <tr><td><b>FR-5.1.7</b> 连通性保证</td><td>生成后从地图中心做 8 向洪水填充，标记"实际可达"格。所有敌人生成点<b>必须</b>位于可达集合内，杜绝"敌人刷在封闭岩体里永远走不过来"的软锁。</td></tr>
+  </tbody>
+</table>
+
+<div class="warn">
+  <span class="t">历史缺陷 · 已修复</span>
+  v0.9 曾出现"殖民地永远和平"的问题：袭击者在岩体包围的死角生成，寻路失败后原地僵持，表现为连续多天无袭击。根因是生成点只校验了"可通行"而未校验"与殖民地连通"。<b>FR-5.1.7 为永久性约束，任何改动生成逻辑的提交必须回归此用例。</b>
+</div>
+
+<!-- ---------------- 5.2 ---------------- -->
+<h3>5.2 时间与节奏 <span class="b b-ship">已实现</span></h3>
+
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.2.1</b> 时间基准</td><td>1 天 = 1440 游戏分钟。模拟以"分钟"为最小步长（1 tick = 1 分钟）。</td></tr>
+    <tr><td><b>FR-5.2.2</b> 起始时刻</td><td>第 1 天 06:00（<code>min = 360</code>）。开局即为白天，玩家可立即看到居民工作。</td></tr>
+    <tr><td><b>FR-5.2.3</b> 时间流速</td><td>1× / 2× / 3× 三档，快捷键 <code>1</code> <code>2</code> <code>3</code>；<code>空格</code> 暂停/继续。切换速度不改变模拟结果，仅改变单位真实时间的 tick 数。</td></tr>
+    <tr><td><b>FR-5.2.4</b> 光照曲线</td><td>06:00–18:00 全亮；18:00–20:00 线性压暗至 0.55 亮度；20:00–04:00 保持 0.55；04:00–07:00 线性恢复。夜间可视度不得低于 0.55，确保玩家仍能读图。</td></tr>
+    <tr><td><b>FR-5.2.5</b> 弹窗即暂停</td><td>任何模态弹窗（引导、帮助、结算）打开时自动暂停，关闭后恢复到打开前的暂停状态。防止玩家读说明时"错过"袭击。</td></tr>
+    <tr><td><b>FR-5.2.6</b> 局终停表</td><td>胜利/失败判定触发后，模拟立即停止，不再接受任何时间推进，仅允许"重开"或"继续观察"（关闭结算弹窗查看最终状态）。</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------------- 5.3 ---------------- -->
+<h3 id="s5-3">5.3 居民与需求 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>居民是"被执行的设计"。他们不需要玩家下达指令，但必须有可被打断的脆弱点（饥饿、疲劳、心情），否则玩家没有需要照看的东西。</p>
+
+<h4>5.3.1 居民属性</h4>
+<table class="compact">
+  <thead><tr><th style="width:110px">属性</th><th style="width:90px">范围</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>生命 hp</td><td class="num">0–100</td><td>≤ 0 进入"倒地"，≤ −35 判定死亡并移出殖民地。脱离战斗（12 格内无敌）时以 0.10 / 分钟自愈。</td></tr>
+    <tr><td>饥饿 hunger</td><td class="num">0–100</td><td>清醒时 −0.052 / 分钟，睡眠时 −0.026 / 分钟。低于 30 触发进食。</td></tr>
+    <tr><td>精力 rest</td><td class="num">0–100</td><td>清醒时 −0.055 / 分钟，睡眠时 +0.30 / 分钟。低于 16 强制睡眠。</td></tr>
+    <tr><td>心情 mood</td><td class="num">0–100</td><td>由加权模型计算（见 5.4）。低于 20 触发精神崩溃。</td></tr>
+    <tr><td>技能 skill</td><td class="num">0–12</td><td>砍伐/采矿/建造/烹饪/战斗五项。工作时有 30% 概率 +0.15，上限 12。影响工作速度与命中率。</td></tr>
+    <tr><td>武器 weapon</td><td>3 类</td><td>步枪 / 手枪 / 近战，决定伤害、射程、冷却（见 5.10）。</td></tr>
+  </tbody>
+</table>
+
+<h4>5.3.2 需求阈值与行为触发</h4>
+<table>
+  <thead><tr><th style="width:150px">条件</th><th style="width:120px">触发行为</th><th>细则</th></tr></thead>
+  <tbody>
+    <tr><td>饥饿 &lt; 30</td><td>主动进食</td><td>优先级高于一切常规工作。优先找<b>餐食</b>，无餐食才吃生食。</td></tr>
+    <tr><td>精力 &lt; 16</td><td>强制睡眠</td><td>无视昼夜立即找床/就地睡。这是防"过劳死循环"的硬保险。</td></tr>
+    <tr><td>夜间 且 精力 &lt; 72</td><td>入睡</td><td>夜间只要精力不满就睡，避免通宵工作导致次日全团低效。</td></tr>
+    <tr><td>精力 ≥ 96（白天）</td><td>醒来</td><td>白天精力恢复到 96 以上即起床；08:00 后 > 78 也起床。防止"睡到中午"。</td></tr>
+    <tr><td>饥饿 &lt; 12</td><td>中断睡眠</td><td>饿醒。极低饥饿可打断睡眠，形成"没存粮 → 睡不好 → 更低效"的负反馈。</td></tr>
+    <tr><td>12 格内有敌人</td><td>中断睡眠、转入战斗</td><td>被袭时必须醒来。</td></tr>
+    <tr><td>心情 &lt; 20</td><td>精神崩溃</td><td>每次判定 0.002 × 分钟 概率触发；触发后 +18 心情，并进入"拒绝工作"状态一段时间。</td></tr>
+  </tbody>
+</table>
+
+<h4>5.3.3 进食与睡眠效果</h4>
+<table class="compact">
+  <thead><tr><th style="width:140px">行为</th><th class="num" style="width:100px">饥饿变化</th><th class="num" style="width:100px">心情变化</th><th>备注</th></tr></thead>
+  <tbody>
+    <tr><td>吃餐食（meal）</td><td class="num">+62</td><td class="num">+3</td><td>需消耗 1 份餐食；餐食由 3 份生食在篝火旁烹饪产出。</td></tr>
+    <tr><td>吃生食（food）</td><td class="num">+26</td><td class="num">−5</td><td>只是"不饿死"。长期吃生食会累积成心情崩塌。</td></tr>
+    <tr><td>床上睡眠</td><td class="num">—</td><td class="num">+5</td><td>有床是心情来源之一。</td></tr>
+    <tr><td>就地睡眠</td><td class="num">—</td><td class="num">−6</td><td>无床时的惩罚，推动玩家尽早造床。</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="t">为什么"生食 vs 餐食"要差 3 倍效率</span>
+  这是本作第一个真正的取舍：篝火占 1 个建造位 + 10 木 6 石 + 45 工时，但能让 3 份生食变成 1 份"高效食物"，且不扣心情。<b>不做篝火的殖民地不会立刻死，但会在第 5 天左右开始集体心情崩溃。</b>这类"延迟惩罚"是本作制造中局张力最主要的手法。
+</div>
+
+<!-- ---------------- 5.4 ---------------- -->
+<h3>5.4 心情模型 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>把分散的系统（食物质量、睡眠质量、居住条件、战斗伤害、天气）压缩成单一可读数字，让玩家有一个"综合健康度"指标。</p>
+
+<p>心情不是即时值，而是向目标值平滑逼近（<code>lerp 系数 0.28</code>），避免数值跳变造成情绪困扰：</p>
+
+<div class="fml">
+<b>mood_target</b> = 52
+  − 20  (饥饿 &lt; 18) | − 10 (饥饿 &lt; 35)
+  − 18  (精力 &lt; 18) | − 8  (精力 &lt; 35)
+  − 14  (hp &lt; 60)
+  − 25  (倒地)
+  − 6   (就地睡) | + 5 (床上睡)
+  + 5   (篝火 4 格内)
+  − 4   (1.6 格内聚众 ≥ 2 人)
+  − 4   (降雨)
+  + moodBias  (个体差异)
+<br>
+<b>mood</b> ← clamp( lerp(mood, mood_target, 0.28), 0, 100 )
+</div>
+
+<table class="compact">
+  <thead><tr><th style="width:180px">状态区间</th><th style="width:110px">UI 颜色</th><th>行为后果</th></tr></thead>
+  <tbody>
+    <tr><td>mood &gt; 55</td><td>绿 <code>#57c07a</code></td><td>正常。工作速度无惩罚。</td></tr>
+    <tr><td>28 &lt; mood ≤ 55</td><td>琥珀 <code>#e8a33d</code></td><td>正常，但已接近警戒线。</td></tr>
+    <tr><td>mood ≤ 28</td><td>红 <code>#e2564d</code></td><td>工作速度下降，日志出现不安提示。</td></tr>
+    <tr><td>mood &lt; 20</td><td>红 + 崩溃标记</td><td>随机精神崩溃：拒绝工作、心情 +18 后缓慢回落。</td></tr>
+  </tbody>
+</table>
+
+<p><b>设计约束：</b>心情的<b>全部输入必须是玩家可干预的</b>。当前 7 个输入项中，饥饿/精力/睡眠位置/篝火/聚众/受伤均可通过布局与生产解决，只有"降雨"不可控——因此降雨权重被压到最低（−4），确保玩家永远有"我本来可以避免"的归因空间（对应设计目标 G2 因果可读）。</p>
+
+<!-- ---------------- 5.5 ---------------- -->
+<h3 id="s5-5">5.5 工作调度 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>这是整个产品的技术核心。玩家不派活，所以"谁去干什么"必须由一个稳定、可预测、不打架的调度器决定。调度器的质量直接决定玩家是否信任这个系统。</p>
+
+<h4>5.5.1 优先级链（每次决策从上到下，第一个成功即返回）</h4>
+<table>
+  <thead><tr><th style="width:44px">序</th><th style="width:150px">任务</th><th style="width:230px">触发条件</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0</td><td>卸货</td><td>手上有搬运物</td><td>先把手上的东西放进仓库区，再考虑其他。防止"抱着木头饿死"。</td></tr>
+    <tr><td class="num">1</td><td>战斗</td><td>13 格内有敌人 且 hp &gt; 25</td><td>血量过低不参战，会逃跑/躲避。</td></tr>
+    <tr><td class="num">2</td><td>进食</td><td>饥饿 &lt; 30</td><td>见 5.3.2。</td></tr>
+    <tr><td class="num">3</td><td>睡眠</td><td>见 <code>shouldSleep()</code></td><td>见 5.3.2 阈值表。</td></tr>
+    <tr><td class="num">4</td><td>建造</td><td>存在未完成蓝图</td><td>取最近蓝图。建造优先级高于采集：玩家的显式指令优先于自动生产。</td></tr>
+    <tr><td class="num">5</td><td>烹饪</td><td>有篝火 且 生食 ≥ 3 且 餐食 &lt; 人数 × 4</td><td>餐食库存上限为人数 × 4，防止无限囤积浪费人力。</td></tr>
+    <tr><td class="num">6</td><td>收割</td><td>浆果成熟 / 作物成熟</td><td>浆果优先于作物（耗时更短、收益更快）。</td></tr>
+    <tr><td class="num">7</td><td>播种</td><td>农田有空地 且 总食物 &lt; 人数 × 26</td><td>带粮食上限：存粮充足时停止播种，把人力让给建造。</td></tr>
+    <tr><td class="num">8</td><td>搬运</td><td>仓库区外有散落物 且 仓库有空位</td><td>把野外物资纳入账目。</td></tr>
+    <tr><td class="num">9</td><td>砍伐</td><td>存在树木</td><td>木材的持续来源。</td></tr>
+    <tr><td class="num">10</td><td>采矿</td><td>存在<b>可站立相邻格</b>的岩体</td><td>只挖能走到跟前的岩壁，避免"隔着墙挖"的无效任务。</td></tr>
+    <tr><td class="num">11</td><td>闲逛</td><td>以上全部失败</td><td>兜底，必须有。绝不允许出现"站着不动"的居民。</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="t">两个关键机制：认领 与 兜底</span>
+  <b>认领（claim）：</b>当居民选定一个目标格（树/矿/作物/蓝图/物资）时，该格被标记为"已被认领"，其他居民在选择时跳过。没有这个机制，3 个居民会同时走向同一棵树，浪费 2 份人力——这是早期版本最明显的体感缺陷。<br>
+  <b>兜底（wander）：</b>优先级链必须有一条永远成功的末位项，否则居民会陷入"无任务 → 重新选任务 → 无任务"的循环，表现为原地抽搐。
+</div>
+
+<h4>5.5.2 任务时长表</h4>
+<p>时长单位为游戏分钟，实际耗时 = 基础时长 ÷ 工作速度（见下）。</p>
+<table class="compact">
+  <thead><tr><th style="width:130px">任务</th><th class="num" style="width:90px">基础时长</th><th class="num" style="width:136px">技能系数</th><th>产出 / 结果</th></tr></thead>
+  <tbody>
+    <tr><td>砍树</td><td class="num">78</td><td>0.70 + 砍伐×0.05</td><td>树木移除 → 木材落到地面（需搬运）</td></tr>
+    <tr><td>采矿</td><td class="num">104</td><td>0.70 + 采矿×0.05</td><td>岩体移除 → 石料落到地面</td></tr>
+    <tr><td>建造</td><td class="num">按建筑</td><td>0.70 + 建造×0.05</td><td>蓝图进度 +1，满进度后实体化</td></tr>
+    <tr><td>烹饪</td><td class="num">42</td><td>0.80 + 烹饪×0.045</td><td>−3 生食 → +1 餐食</td></tr>
+    <tr><td>采浆果</td><td class="num">32</td><td>0.90 + 砍伐×0.02</td><td>+2~4 食物，灌木进入再生计时</td></tr>
+    <tr><td>收作物</td><td class="num">38</td><td>0.90 + 砍伐×0.02</td><td>+7 食物，作物清空（需重新播种）</td></tr>
+    <tr><td>播种</td><td class="num">26</td><td>0.90 + 砍伐×0.02</td><td>农田格生成作物，生长度 0</td></tr>
+    <tr><td>搬运</td><td class="num">7</td><td>—</td><td>拿起地面物资；到仓库放下耗时 6</td></tr>
+    <tr><td>进食</td><td class="num">16</td><td>—</td><td>结算饥饿与心情</td></tr>
+  </tbody>
+</table>
+
+<p><b>工作速度修正：</b><code>speed = (0.86 + hp/maxHp × 0.18) × (携带物 ? 0.92 : 1) × (精力 &lt; 25 ? 0.88 : 1)</code>；若精力 &lt; 20 再 × 0.7。这意味着<b>受伤和疲劳会真实拖慢整条生产线</b>，而不是只影响战斗。</p>
+
+<!-- ---------------- 5.6 ---------------- -->
+<h3>5.6 寻路 <span class="b b-ship">已实现</span></h3>
+
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.6.1</b> 算法</td><td>A*，8 方向邻接。斜向移动要求两个正交邻格均可通行（禁止穿墙角）。</td></tr>
+    <tr><td><b>FR-5.6.2</b> 代价</td><td>基础 1.0；斜向 ≈1.414；地形差异体现在通行性（水/岩不可走），不做"沼泽减速"。</td></tr>
+    <tr><td><b>FR-5.6.3</b> 缓存</td><td>路径在目标不变时复用；目标失效（树被砍完/蓝图完成）时立即重算。</td></tr>
+    <tr><td><b>FR-5.6.4</b> 失败处理</td><td>寻路失败必须<b>清空任务并返回 false</b>，让调度器继续尝试下一优先级，禁止卡死。敌人寻路失败则转为"破墙"行为。</td></tr>
+    <tr><td><b>FR-5.6.5</b> 相邻交互</td><td>大多任务允许在目标<b>相邻格</b>执行（砍树/采矿/建造/搬运），只有播种需要站在格上。</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------------- 5.7 ---------------- -->
+<h3>5.7 建造与区域 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>玩家唯一的"表达通道"。所有建造都必须满足：<b>立刻扣料 → 生成蓝图 → 由居民施工</b>，让玩家看到"我的决定已被系统接收，但还没完成"。</p>
+
+<h4>5.7.1 建筑表</h4>
+<table>
+  <thead><tr><th style="width:110px">建筑</th><th style="width:120px">成本</th><th class="num" style="width:70px">工时</th><th class="num" style="width:70px">耐久</th><th style="width:80px">阻挡</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><b>石墙</b></td><td>石 4</td><td class="num">46</td><td class="num">150</td><td>是</td><td>挡子弹（造成 LOS 中断，命中率 ×0.5）、挡敌人（迫使破墙）、划定营地边界。</td></tr>
+    <tr><td><b>木门</b></td><td>木 6</td><td class="num">40</td><td class="num">100</td><td>否</td><td>唯一允许居民穿行的"墙"。<b>围墙不留门 = 自己人出不去。</b></td></tr>
+    <tr><td><b>床铺</b></td><td>木 14</td><td class="num">52</td><td class="num">80</td><td>否</td><td>睡眠点，床上睡 +5 心情；无床 −6。</td></tr>
+    <tr><td><b>篝火</b></td><td>木 10 + 石 6</td><td class="num">45</td><td class="num">70</td><td>否</td><td>烹饪必需；4 格内 +5 心情；夜间照明。</td></tr>
+    <tr><td><b>哨戒炮</b></td><td>石 22 + 木 10</td><td class="num">90</td><td class="num">180</td><td>是</td><td>自动索敌开火：伤害 18，冷却 12 分钟，命中按技能 9 计算。防御核心。</td></tr>
+    <tr><td><b>餐桌</b></td><td>木 16</td><td class="num">44</td><td class="num">80</td><td>否</td><td>生活质量提升（当前为装饰性设施，见 §13 开放问题）。</td></tr>
+  </tbody>
+</table>
+
+<div class="warn">
+  <span class="t">关键取舍：石料的双重身份</span>
+  石墙 4 石、哨戒炮 22 石。按 12 天强度，防御工事总需求约 250–350 石，而单局采矿产出上限约 335 石。<b>"墙修多厚"与"炮造几门"是同一个预算里的两个出口</b>，这是本作最核心的战略决策（对应设计目标 G3）。
+</div>
+
+<h4>5.7.2 区域</h4>
+<table class="compact">
+  <thead><tr><th style="width:110px">区域</th><th>规则</th></tr></thead>
+  <tbody>
+    <tr><td><b>仓库区</b></td><td>拖拽圈划。<b>只有落在仓库区内的物品才计入资源账目</b>。移出仓库区会导致账目扣减。仓库区是建造扣料的唯一来源。</td></tr>
+    <tr><td><b>农田</b></td><td>拖拽圈划。居民会自动在其中播种/收割。水面、岩体、已有树木的格不可划入。</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="t">为什么"资源必须搬进仓库区才算数"</span>
+  这是本作最重要的一条"教学型机制"。它同时解决三个问题：① 让"搬运"成为有意义的劳动，而不是无意义的动画；② 让玩家理解"生产 ≠ 拥有"，砍了树不等于有木材；③ 给玩家一个立刻可做的第一个操作（圈仓库区），满足 G1 的 30 秒上手目标。<br>
+  代价是玩家可能困惑"我明明砍了树，为什么木材还是 0"。因此 UI 必须在资源栏显示"地面散落 N"的提示（见 FR-6.2.6）。
+</div>
+
+<!-- ---------------- 5.8 ---------------- -->
+<h3>5.8 经济与物品 <span class="b b-ship">已实现</span></h3>
+
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.8.1</b> 资源种类</td><td>4 种：木材 <code>wood</code>、石料 <code>stone</code>、生食 <code>food</code>、餐食 <code>meal</code>。不做中间产物、不做货币。</td></tr>
+    <tr><td><b>FR-5.8.2</b> 开局资源</td><td>仓库区内初始：木 120 / 石 60 / 食 16 / 餐 6；外加地图散落 木 60 / 食 10（需搬运入仓）。开局资源足够完成"1 床 + 1 篝火 + 1 门 + 约 10 段墙"。</td></tr>
+    <tr><td><b>FR-5.8.3</b> 账目一致性</td><td>资源数字 = 仓库区内所有物品堆的合计。任何"移动物品进/出仓库区"的操作必须同步更新账目，禁止出现地面有货但账目为 0 或反之。</td></tr>
+    <tr><td><b>FR-5.8.4</b> 扣料顺序</td><td>放建筑时<b>立即扣料并生成蓝图</b>；若中途拆除蓝图，返还 50% 成本（向下取整）到仓库。</td></tr>
+    <tr><td><b>FR-5.8.5</b> 产能上限</td><td>食物存量 &gt; 人数 × 26 时停止播种；餐食 &gt; 人数 × 4 时停止烹饪。防止人力被无限投入到已过剩的环节。</td></tr>
+  </tbody>
+</table>
+
+<div class="warn">
+  <span class="t">历史缺陷 · 已修复</span>
+  v0.8 的资源账目与地面物品是两套独立数据，导致"数字永远不动"——玩家砍树、采集后资源栏不变。修复方式是把账目改为<b>对仓库区的派生计算结果</b>（单一数据源），而非独立累加器。这是本 PRD 中 FR-5.8.3 的由来。
+</div>
+
+<!-- ---------------- 5.9 ---------------- -->
+<h3>5.9 农业与植被 <span class="b b-ship">已实现</span></h3>
+
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.9.1</b> 作物生长</td><td>生长度按 <code>dt / 1700</code> 递增（dt 为分钟）。从播种到成熟约 <b>1700 分钟 ≈ 28.3 游戏小时 ≈ 1.2 天</b>。降雨时速率 × 1.5。</td></tr>
+    <tr><td><b>FR-5.9.2</b> 批量更新</td><td>植物生长每 20 分钟批量结算一次（性能考虑），单次结算量 = 20 分钟。</td></tr>
+    <tr><td><b>FR-5.9.3</b> 浆果再生</td><td>灌木被采空后进入再生计时，到期恢复 2–4 颗浆果。再生使"采集"成为可持续的早期食物来源，而不是一次性资源。</td></tr>
+    <tr><td><b>FR-5.9.4</b> 灾害</td><td>降雨日且成熟作物 &gt; 6 株时，18% 概率触发暴雨，随机摧毁约 50% 作物。这是"农业不是免费午餐"的表达。</td></tr>
+    <tr><td><b>FR-5.9.5</b> 产出</td><td>浆果 +2~4 食物 / 32 分钟；作物 +7 食物 / 38 分钟（另需 26 分钟播种 + 1.2 天生长）。</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------------- 5.10 ---------------- -->
+<h3 id="s5-10">5.10 战斗 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>把前 30 分钟的布局决策做一次"结算"。战斗本身要让玩家几乎无法干预（见 §4.3），胜负必须由墙、炮、人数与状态决定。</p>
+
+<h4>5.10.1 命中与伤害</h4>
+<div class="fml">
+<b>命中率</b> = clamp( 0.62 + 技能 × 0.022 − 距离 × 0.042 , <b>0.12</b> , <b>0.94</b> )
+<br>若视线被石墙阻挡（LOS 中断） → 命中率 <b>× 0.5</b>
+<br><b>伤害</b> = 基础伤害 × random( <b>0.75</b> , <b>1.30</b> )
+</div>
+
+<table class="compact">
+  <thead><tr><th style="width:130px">单位</th><th style="width:100px">武器</th><th class="num" style="width:80px">伤害</th><th class="num" style="width:80px">射程</th><th class="num" style="width:80px">冷却(分)</th><th class="num" style="width:90px">生命</th></tr></thead>
+  <tbody>
+    <tr><td>居民</td><td>步枪</td><td class="num">14</td><td class="num">7.5</td><td class="num">10</td><td class="num">100</td></tr>
+    <tr><td>居民</td><td>手枪</td><td class="num">11</td><td class="num">5.4</td><td class="num">8</td><td class="num">100</td></tr>
+    <tr><td>居民</td><td>近战</td><td class="num">16</td><td class="num">1.2</td><td class="num">7</td><td class="num">100</td></tr>
+    <tr><td>掠袭者</td><td>步枪</td><td class="num">10</td><td class="num">7.0</td><td class="num">14</td><td class="num">62 + 层级×14</td></tr>
+    <tr><td>掠袭者</td><td>手枪</td><td class="num">8</td><td class="num">5.2</td><td class="num">12</td><td class="num">62 + 层级×14</td></tr>
+    <tr><td>哨戒炮</td><td>—</td><td class="num">18</td><td class="num">自动索敌</td><td class="num">12</td><td class="num">180</td></tr>
+  </tbody>
+</table>
+
+<h4>5.10.2 生死规则</h4>
+<ul>
+  <li><b>倒地</b>：hp ≤ 0 即倒地，失去行动与攻击能力，但<b>不算死亡</b>。脱离战斗 12 格后开始自愈（0.10 hp/分钟）。</li>
+  <li><b>死亡</b>：hp ≤ −35 判定死亡。居民死亡即从殖民地移除，永久损失。</li>
+  <li><b>倒地可被继续攻击</b>：这是真实威胁。玩家必须靠"墙 + 炮"把敌人挡在倒地者之外，而不是指望"倒地即安全"。</li>
+  <li><b>不参战阈值</b>：居民 hp &lt; 25 时不主动接战。</li>
+</ul>
+
+<div class="warn">
+  <span class="t">历史缺陷 · 已修复（平衡）</span>
+  v0.9 的射击冷却为 38 分钟/发，导致单场袭击耗时超过一天、掠袭者越积越多却打不死，殖民地陷入"永久的低强度战争"。调整为 8–14 分钟后，单场袭击在 30–60 游戏分钟内可分出胜负。<b>经验值：冷却时长必须与"一天 1440 分钟"的尺度一起校验，否则会出现数量级错误。</b>
+</div>
+
+<!-- ---------------- 5.11 ---------------- -->
+<h3 id="s5-11">5.11 威胁与事件 <span class="b b-ship">已实现</span></h3>
+
+<p><b>职责：</b>提供外部压力，使"稳态"永远不会真正到来。所有事件必须是<b>可预期的</b>（玩家能提前备战）或<b>可归因的</b>（能理解为何发生）。</p>
+
+<h4>5.11.1 袭击日程</h4>
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.11.1</b> 触发日</td><td>第 2、4、6、8、10、12 天，以及第 5 天后的每个 5 的倍数日（5/15/20…）。即<b>固定日程 + 周期日程</b>，玩家可学习与预测。</td></tr>
+    <tr><td><b>FR-5.11.2</b> 规模</td><td><code>人数 = 1 + floor(天数 / 3) + floor(居民数 / 3)</code>。第 2 天 1 人，第 10 天约 4–5 人。<b>人口越多，袭击越强</b>——扩张有代价。</td></tr>
+    <tr><td><b>FR-5.11.3</b> 强度层级</td><td><code>tier = floor(天数 / 3)</code>，影响敌人生命（62 + tier×14）。</td></tr>
+    <tr><td><b>FR-5.11.4</b> 生成位置</td><td>从地图边界、且位于"可达集合"内的点生成，同批敌人集中在同一入口附近（便于形成"攻势"而非散兵）。</td></tr>
+    <tr><td><b>FR-5.11.5</b> 目标选择</td><td>攻击最近的居民。路径不可达时转为破墙（拆挡路的石墙/门）。卡死超过 1400 分钟则离场并记录日志。</td></tr>
+    <tr><td><b>FR-5.11.6</b> 期限</td><td>超过 <code>目标天数 + 2</code> 后不再刷新袭击，确保胜利前不会无限加压。</td></tr>
+  </tbody>
+</table>
+
+<h4>5.11.2 其他事件</h4>
+<table class="compact">
+  <thead><tr><th style="width:120px">事件</th><th class="num" style="width:100px">概率 / 条件</th><th>效果与设计意图</th></tr></thead>
+  <tbody>
+    <tr><td>天气刷新</td><td>每日</td><td>雨 22% / 阴 20% / 晴 58%。雨天使作物生长 ×1.5，但全体心情 −4。</td></tr>
+    <tr><td>流浪者加入</td><td>第 3 天起 22%，上限 7 人</td><td>人口 +1。既是助力也是负担（吃得多、引来更大袭击）。</td></tr>
+    <tr><td>暴雨毁田</td><td>雨天 + 成熟作物 &gt; 6 时 18%</td><td>摧毁约 50% 作物。惩罚"把全部食物押在一块田"。</td></tr>
+    <tr><td>食物被窃</td><td>每日 10%</td><td>损失 5 份食物。小幅消耗，防止存粮无限膨胀。</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------------- 5.12 ---------------- -->
+<h3>5.12 胜负与终局 <span class="b b-ship">已实现</span></h3>
+
+<table>
+  <thead><tr><th style="width:110px">结果</th><th style="width:230px">判定条件</th><th>表现</th></tr></thead>
+  <tbody>
+    <tr><td><b>胜利</b></td><td>天数 &gt; 12</td><td>结算弹窗：存活天数、战斗击杀数、建造数、资源结余。<b>明确告知"这一冬过去了"</b>，给出情绪落点而非单纯数字。</td></tr>
+    <tr><td><b>失败</b></td><td>全员倒地 或 全员死亡</td><td>结算弹窗优先展示"哪一天、因为什么"（饥饿/战斗/心情），并提供一键重开。</td></tr>
+    <tr><td><b>继续观察</b></td><td>结算后可选</td><td>关闭弹窗但不重置，允许玩家查看最终局面（用于截图/复盘）。</td></tr>
+  </tbody>
+</table>
+
+<p><b>判定频率：</b>每 5 游戏分钟检查一次（见 <code>simMinute</code>）。避免每 tick 检查带来的性能浪费，同时保证判定延迟不超过 5 分钟。</p>
+
+<!-- ---------------- 5.13 ---------------- -->
+<h3>5.13 存档 <span class="b b-ship">已实现</span></h3>
+
+<table>
+  <tbody>
+    <tr><td style="width:150px"><b>FR-5.13.1</b> 存储位置</td><td>浏览器 <code>localStorage</code>，单槽位手动存档 + 手动读档。不上传、不联网。</td></tr>
+    <tr><td><b>FR-5.13.2</b> 存档内容</td><td>版本号 <code>v</code>、时间、天数、资源、目标天数、天气、统计、序列号、地图种子与全部地块状态（地形/植物/建筑/区域/物品）、居民完整状态、掠袭者状态。</td></tr>
+    <tr><td><b>FR-5.13.3</b> 往返一致性</td><td><b>存档 → 新开 → 读档</b> 后，世界状态签名（天数/时间/资源/建筑数/居民位置与三项需求）必须与存前完全一致。这是硬性验收项（AC-13）。</td></tr>
+    <tr><td><b>FR-5.13.4</b> 兼容性</td><td>版本不匹配时提示"旧存档不可用"并拒绝加载，不做静默降级，避免产生脏状态。</td></tr>
+    <tr><td><b>FR-5.13.5</b> 隐私</td><td>不采集任何用户数据，不发任何网络请求（含字体、CDN、统计脚本）。可完全离线运行。</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<!-- ============================================================ 6 -->
+<div class="inner">
+
+<h2 id="s6"><span class="no">06 / UI &amp; UX</span>界面与交互</h2>
+
+<p><b>设计原则：<span style="color:var(--moss)">信息在需要时出现，不需要时不占屏。</span></b> 主视图（地图）必须占据最大面积，因为玩家 80% 的时间在看"我的殖民地运转得怎么样"，而不是在看面板。</p>
+
+<h3>6.1 布局线框</h3>
+
+<div class="wf" aria-label="游戏界面线框">
+  <div class="r1">
+    <span class="pill">木 128</span><span class="pill">石 74</span><span class="pill g">食 22</span><span class="pill y">餐 5</span>
+    <span class="pill">第 4 天 09:12</span><span class="pill">晴</span>
+    <span style="margin-left:auto" class="pill r">⏸ 1× 2× 3×</span>
+    <span class="pill">存</span><span class="pill">读</span><span class="pill">?</span>
+  </div>
+  <div class="r2">
+    <div class="cv"><svg viewBox="0 0 720 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%"><rect x="0" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="20" y="0" width="20" height="20" fill="#6b9a49"/><rect x="40" y="0" width="20" height="20" fill="#857054"/><rect x="60" y="0" width="20" height="20" fill="#857054"/><rect x="80" y="0" width="20" height="20" fill="#857054"/><rect x="100" y="0" width="20" height="20" fill="#6b9a49"/><rect x="120" y="0" width="20" height="20" fill="#6b9a49"/><rect x="140" y="0" width="20" height="20" fill="#72a150"/><rect x="160" y="0" width="20" height="20" fill="#857054"/><rect x="180" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="200" y="0" width="20" height="20" fill="#6b9a49"/><rect x="220" y="0" width="20" height="20" fill="#72a150"/><rect x="240" y="0" width="20" height="20" fill="#8b7557"/><rect x="260" y="0" width="20" height="20" fill="#8b7557"/><rect x="280" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="300" y="0" width="20" height="20" fill="#679443"/><rect x="320" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="340" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="360" y="0" width="20" height="20" fill="#6b9a49"/><rect x="380" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="0" width="20" height="20" fill="#72a150"/><rect x="420" y="0" width="20" height="20" fill="#72a150"/><rect x="440" y="0" width="20" height="20" fill="#72a150"/><rect x="460" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="480" y="0" width="20" height="20" fill="#6f9e4c"/><rect x="500" y="0" width="20" height="20" fill="#8e7859"/><rect x="520" y="0" width="20" height="20" fill="#60656d"/><rect x="540" y="0" width="20" height="20" fill="#60656d"/><rect x="560" y="0" width="20" height="20" fill="#5c6169"/><rect x="580" y="0" width="20" height="20" fill="#60656d"/><rect x="600" y="0" width="20" height="20" fill="#60656d"/><rect x="620" y="0" width="20" height="20" fill="#60656d"/><rect x="640" y="0" width="20" height="20" fill="#575c63"/><rect x="660" y="0" width="20" height="20" fill="#575c63"/><rect x="680" y="0" width="20" height="20" fill="#60656d"/><rect x="700" y="0" width="20" height="20" fill="#60656d"/><rect x="0" y="20" width="20" height="20" fill="#72a150"/><rect x="20" y="20" width="20" height="20" fill="#8b7557"/><rect x="40" y="20" width="20" height="20" fill="#72a150"/><rect x="60" y="20" width="20" height="20" fill="#6b9a49"/><rect x="80" y="20" width="20" height="20" fill="#857054"/><rect x="100" y="20" width="20" height="20" fill="#72a150"/><rect x="120" y="20" width="20" height="20" fill="#72a150"/><rect x="140" y="20" width="20" height="20" fill="#679443"/><rect x="160" y="20" width="20" height="20" fill="#8e7859"/><rect x="180" y="20" width="20" height="20" fill="#6b9a49"/><rect x="200" y="20" width="20" height="20" fill="#6f9e4c"/><rect x="220" y="20" width="20" height="20" fill="#6f9e4c"/><rect x="240" y="20" width="20" height="20" fill="#72a150"/><rect x="260" y="20" width="20" height="20" fill="#72a150"/><rect x="280" y="20" width="20" height="20" fill="#8e7859"/><rect x="300" y="20" width="20" height="20" fill="#679443"/><rect x="320" y="20" width="20" height="20" fill="#72a150"/><rect x="340" y="20" width="20" height="20" fill="#679443"/><rect x="360" y="20" width="20" height="20" fill="#679443"/><rect x="380" y="20" width="20" height="20" fill="#72a150"/><rect x="400" y="20" width="20" height="20" fill="#6f9e4c"/><rect x="420" y="20" width="20" height="20" fill="#8b7557"/><rect x="440" y="20" width="20" height="20" fill="#6f9e4c"/><rect x="460" y="20" width="20" height="20" fill="#857054"/><rect x="480" y="20" width="20" height="20" fill="#679443"/><rect x="500" y="20" width="20" height="20" fill="#8e7859"/><rect x="520" y="20" width="20" height="20" fill="#575c63"/><rect x="540" y="20" width="20" height="20" fill="#5c6169"/><rect x="560" y="20" width="20" height="20" fill="#575c63"/><rect x="580" y="20" width="20" height="20" fill="#6b9a49"/><rect x="600" y="20" width="20" height="20" fill="#575c63"/><rect x="620" y="20" width="20" height="20" fill="#60656d"/><rect x="640" y="20" width="20" height="20" fill="#60656d"/><rect x="660" y="20" width="20" height="20" fill="#575c63"/><rect x="680" y="20" width="20" height="20" fill="#5c6169"/><rect x="700" y="20" width="20" height="20" fill="#5c6169"/><rect x="0" y="40" width="20" height="20" fill="#6b9a49"/><rect x="20" y="40" width="20" height="20" fill="#6b9a49"/><rect x="40" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="60" y="40" width="20" height="20" fill="#679443"/><rect x="80" y="40" width="20" height="20" fill="#6b9a49"/><rect x="100" y="40" width="20" height="20" fill="#72a150"/><rect x="120" y="40" width="20" height="20" fill="#679443"/><rect x="140" y="40" width="20" height="20" fill="#679443"/><rect x="160" y="40" width="20" height="20" fill="#6b9a49"/><rect x="180" y="40" width="20" height="20" fill="#72a150"/><rect x="200" y="40" width="20" height="20" fill="#679443"/><rect x="220" y="40" width="20" height="20" fill="#8b7557"/><rect x="240" y="40" width="20" height="20" fill="#679443"/><rect x="260" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="280" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="300" y="40" width="20" height="20" fill="#679443"/><rect x="320" y="40" width="20" height="20" fill="#6b9a49"/><rect x="340" y="40" width="20" height="20" fill="#679443"/><rect x="360" y="40" width="20" height="20" fill="#6b9a49"/><rect x="380" y="40" width="20" height="20" fill="#679443"/><rect x="400" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="420" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="440" y="40" width="20" height="20" fill="#679443"/><rect x="460" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="480" y="40" width="20" height="20" fill="#72a150"/><rect x="500" y="40" width="20" height="20" fill="#6f9e4c"/><rect x="520" y="40" width="20" height="20" fill="#60656d"/><rect x="540" y="40" width="20" height="20" fill="#5c6169"/><rect x="560" y="40" width="20" height="20" fill="#72a150"/><rect x="580" y="40" width="20" height="20" fill="#575c63"/><rect x="600" y="40" width="20" height="20" fill="#60656d"/><rect x="620" y="40" width="20" height="20" fill="#575c63"/><rect x="640" y="40" width="20" height="20" fill="#679443"/><rect x="660" y="40" width="20" height="20" fill="#5c6169"/><rect x="680" y="40" width="20" height="20" fill="#5c6169"/><rect x="700" y="40" width="20" height="20" fill="#60656d"/><rect x="0" y="60" width="20" height="20" fill="#6b9a49"/><rect x="20" y="60" width="20" height="20" fill="#679443"/><rect x="40" y="60" width="20" height="20" fill="#6b9a49"/><rect x="60" y="60" width="20" height="20" fill="#6b9a49"/><rect x="80" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="100" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="120" y="60" width="20" height="20" fill="#679443"/><rect x="140" y="60" width="20" height="20" fill="#857054"/><rect x="160" y="60" width="20" height="20" fill="#72a150"/><rect x="180" y="60" width="20" height="20" fill="#6b9a49"/><rect x="200" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="220" y="60" width="20" height="20" fill="#6b9a49"/><rect x="240" y="60" width="20" height="20" fill="#72a150"/><rect x="260" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="280" y="60" width="20" height="20" fill="#72a150"/><rect x="300" y="60" width="20" height="20" fill="#679443"/><rect x="320" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="340" y="60" width="20" height="20" fill="#857054"/><rect x="360" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="380" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="420" y="60" width="20" height="20" fill="#8b7557"/><rect x="440" y="60" width="20" height="20" fill="#6f9e4c"/><rect x="460" y="60" width="20" height="20" fill="#679443"/><rect x="480" y="60" width="20" height="20" fill="#72a150"/><rect x="500" y="60" width="20" height="20" fill="#6b9a49"/><rect x="520" y="60" width="20" height="20" fill="#72a150"/><rect x="540" y="60" width="20" height="20" fill="#575c63"/><rect x="560" y="60" width="20" height="20" fill="#575c63"/><rect x="580" y="60" width="20" height="20" fill="#5c6169"/><rect x="600" y="60" width="20" height="20" fill="#5c6169"/><rect x="620" y="60" width="20" height="20" fill="#6b9a49"/><rect x="640" y="60" width="20" height="20" fill="#5c6169"/><rect x="660" y="60" width="20" height="20" fill="#60656d"/><rect x="680" y="60" width="20" height="20" fill="#5c6169"/><rect x="700" y="60" width="20" height="20" fill="#60656d"/><rect x="0" y="80" width="20" height="20" fill="#72a150"/><rect x="20" y="80" width="20" height="20" fill="#6b9a49"/><rect x="40" y="80" width="20" height="20" fill="#6b9a49"/><rect x="60" y="80" width="20" height="20" fill="#679443"/><rect x="80" y="80" width="20" height="20" fill="#8b7557"/><rect x="100" y="80" width="20" height="20" fill="#6b9a49"/><rect x="120" y="80" width="20" height="20" fill="#6b9a49"/><rect x="140" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="160" y="80" width="20" height="20" fill="#72a150"/><rect x="180" y="80" width="20" height="20" fill="#72a150"/><rect x="200" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="220" y="80" width="20" height="20" fill="#679443"/><rect x="240" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="260" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="280" y="80" width="20" height="20" fill="#72a150"/><rect x="300" y="80" width="20" height="20" fill="#6b9a49"/><rect x="320" y="80" width="20" height="20" fill="#72a150"/><rect x="340" y="80" width="20" height="20" fill="#857054"/><rect x="360" y="80" width="20" height="20" fill="#6b9a49"/><rect x="380" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="80" width="20" height="20" fill="#679443"/><rect x="420" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="440" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="460" y="80" width="20" height="20" fill="#6b9a49"/><rect x="480" y="80" width="20" height="20" fill="#72a150"/><rect x="500" y="80" width="20" height="20" fill="#6f9e4c"/><rect x="520" y="80" width="20" height="20" fill="#60656d"/><rect x="540" y="80" width="20" height="20" fill="#72a150"/><rect x="560" y="80" width="20" height="20" fill="#60656d"/><rect x="580" y="80" width="20" height="20" fill="#60656d"/><rect x="600" y="80" width="20" height="20" fill="#575c63"/><rect x="620" y="80" width="20" height="20" fill="#575c63"/><rect x="640" y="80" width="20" height="20" fill="#60656d"/><rect x="660" y="80" width="20" height="20" fill="#60656d"/><rect x="680" y="80" width="20" height="20" fill="#5c6169"/><rect x="700" y="80" width="20" height="20" fill="#5c6169"/><rect x="0" y="100" width="20" height="20" fill="#6b9a49"/><rect x="20" y="100" width="20" height="20" fill="#8e7859"/><rect x="40" y="100" width="20" height="20" fill="#8b7557"/><rect x="60" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="80" y="100" width="20" height="20" fill="#679443"/><rect x="100" y="100" width="20" height="20" fill="#72a150"/><rect x="120" y="100" width="20" height="20" fill="#6b9a49"/><rect x="140" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="160" y="100" width="20" height="20" fill="#6b9a49"/><rect x="180" y="100" width="20" height="20" fill="#6b9a49"/><rect x="200" y="100" width="20" height="20" fill="#679443"/><rect x="220" y="100" width="20" height="20" fill="#8b7557"/><rect x="240" y="100" width="20" height="20" fill="#8b7557"/><rect x="260" y="100" width="20" height="20" fill="#679443"/><rect x="280" y="100" width="20" height="20" fill="#72a150"/><rect x="300" y="100" width="20" height="20" fill="#679443"/><rect x="320" y="100" width="20" height="20" fill="#6b9a49"/><rect x="340" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="360" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="380" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="100" width="20" height="20" fill="#679443"/><rect x="420" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="440" y="100" width="20" height="20" fill="#6f9e4c"/><rect x="460" y="100" width="20" height="20" fill="#6b9a49"/><rect x="480" y="100" width="20" height="20" fill="#6b9a49"/><rect x="500" y="100" width="20" height="20" fill="#857054"/><rect x="520" y="100" width="20" height="20" fill="#5c6169"/><rect x="540" y="100" width="20" height="20" fill="#5c6169"/><rect x="560" y="100" width="20" height="20" fill="#72a150"/><rect x="580" y="100" width="20" height="20" fill="#575c63"/><rect x="600" y="100" width="20" height="20" fill="#679443"/><rect x="620" y="100" width="20" height="20" fill="#5c6169"/><rect x="640" y="100" width="20" height="20" fill="#575c63"/><rect x="660" y="100" width="20" height="20" fill="#5c6169"/><rect x="680" y="100" width="20" height="20" fill="#60656d"/><rect x="700" y="100" width="20" height="20" fill="#6b9a49"/><rect x="0" y="120" width="20" height="20" fill="#857054"/><rect x="20" y="120" width="20" height="20" fill="#72a150"/><rect x="40" y="120" width="20" height="20" fill="#6b9a49"/><rect x="60" y="120" width="20" height="20" fill="#72a150"/><rect x="80" y="120" width="20" height="20" fill="#679443"/><rect x="100" y="120" width="20" height="20" fill="#679443"/><rect x="120" y="120" width="20" height="20" fill="#8b7557"/><rect x="140" y="120" width="20" height="20" fill="#72a150"/><rect x="160" y="120" width="20" height="20" fill="#8e7859"/><rect x="180" y="120" width="20" height="20" fill="#679443"/><rect x="200" y="120" width="20" height="20" fill="#679443"/><rect x="220" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="240" y="120" width="20" height="20" fill="#8e7859"/><rect x="260" y="120" width="20" height="20" fill="#8e7859"/><rect x="280" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="300" y="120" width="20" height="20" fill="#6b9a49"/><rect x="320" y="120" width="20" height="20" fill="#8b7557"/><rect x="340" y="120" width="20" height="20" fill="#6b9a49"/><rect x="360" y="120" width="20" height="20" fill="#679443"/><rect x="380" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="120" width="20" height="20" fill="#857054"/><rect x="420" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="440" y="120" width="20" height="20" fill="#72a150"/><rect x="460" y="120" width="20" height="20" fill="#72a150"/><rect x="480" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="500" y="120" width="20" height="20" fill="#857054"/><rect x="520" y="120" width="20" height="20" fill="#72a150"/><rect x="540" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="560" y="120" width="20" height="20" fill="#6b9a49"/><rect x="580" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="600" y="120" width="20" height="20" fill="#8b7557"/><rect x="620" y="120" width="20" height="20" fill="#679443"/><rect x="640" y="120" width="20" height="20" fill="#72a150"/><rect x="660" y="120" width="20" height="20" fill="#6b9a49"/><rect x="680" y="120" width="20" height="20" fill="#6f9e4c"/><rect x="700" y="120" width="20" height="20" fill="#6b9a49"/><rect x="0" y="140" width="20" height="20" fill="#857054"/><rect x="20" y="140" width="20" height="20" fill="#857054"/><rect x="40" y="140" width="20" height="20" fill="#bfa876"/><rect x="60" y="140" width="20" height="20" fill="#679443"/><rect x="80" y="140" width="20" height="20" fill="#c3ac7a"/><rect x="100" y="140" width="20" height="20" fill="#bfa876"/><rect x="120" y="140" width="20" height="20" fill="#72a150"/><rect x="140" y="140" width="20" height="20" fill="#bfa876"/><rect x="160" y="140" width="20" height="20" fill="#c3ac7a"/><rect x="180" y="140" width="20" height="20" fill="#6b9a49"/><rect x="200" y="140" width="20" height="20" fill="#679443"/><rect x="220" y="140" width="20" height="20" fill="#6f9e4c"/><rect x="240" y="140" width="20" height="20" fill="#8b7557"/><rect x="260" y="140" width="20" height="20" fill="#6b9a49"/><rect x="280" y="140" width="20" height="20" fill="#72a150"/><rect x="300" y="140" width="20" height="20" fill="#679443"/><rect x="320" y="140" width="20" height="20" fill="#72a150"/><rect x="340" y="140" width="20" height="20" fill="#6f9e4c"/><rect x="360" y="140" width="20" height="20" fill="#6b9a49"/><rect x="380" y="140" width="20" height="20" fill="#6b9a49"/><rect x="400" y="140" width="20" height="20" fill="#6b9a49"/><rect x="420" y="140" width="20" height="20" fill="#72a150"/><rect x="440" y="140" width="20" height="20" fill="#72a150"/><rect x="460" y="140" width="20" height="20" fill="#6f9e4c"/><rect x="480" y="140" width="20" height="20" fill="#8b7557"/><rect x="500" y="140" width="20" height="20" fill="#679443"/><rect x="520" y="140" width="20" height="20" fill="#6f9e4c"/><rect x="540" y="140" width="20" height="20" fill="#679443"/><rect x="560" y="140" width="20" height="20" fill="#679443"/><rect x="580" y="140" width="20" height="20" fill="#72a150"/><rect x="600" y="140" width="20" height="20" fill="#6f9e4c"/><rect x="620" y="140" width="20" height="20" fill="#8e7859"/><rect x="640" y="140" width="20" height="20" fill="#72a150"/><rect x="660" y="140" width="20" height="20" fill="#6f9e4c"/><rect x="680" y="140" width="20" height="20" fill="#72a150"/><rect x="700" y="140" width="20" height="20" fill="#679443"/><rect x="0" y="160" width="20" height="20" fill="#c8b17e"/><rect x="20" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="40" y="160" width="20" height="20" fill="#679443"/><rect x="60" y="160" width="20" height="20" fill="#c3ac7a"/><rect x="80" y="160" width="20" height="20" fill="#bfa876"/><rect x="100" y="160" width="20" height="20" fill="#c8b17e"/><rect x="120" y="160" width="20" height="20" fill="#679443"/><rect x="140" y="160" width="20" height="20" fill="#bfa876"/><rect x="160" y="160" width="20" height="20" fill="#c3ac7a"/><rect x="180" y="160" width="20" height="20" fill="#c8b17e"/><rect x="200" y="160" width="20" height="20" fill="#c8b17e"/><rect x="220" y="160" width="20" height="20" fill="#679443"/><rect x="240" y="160" width="20" height="20" fill="#72a150"/><rect x="260" y="160" width="20" height="20" fill="#72a150"/><rect x="280" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="300" y="160" width="20" height="20" fill="#6b9a49"/><rect x="320" y="160" width="20" height="20" fill="#72a150"/><rect x="340" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="360" y="160" width="20" height="20" fill="#679443"/><rect x="380" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="160" width="20" height="20" fill="#72a150"/><rect x="420" y="160" width="20" height="20" fill="#679443"/><rect x="440" y="160" width="20" height="20" fill="#679443"/><rect x="460" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="480" y="160" width="20" height="20" fill="#72a150"/><rect x="500" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="520" y="160" width="20" height="20" fill="#857054"/><rect x="540" y="160" width="20" height="20" fill="#72a150"/><rect x="560" y="160" width="20" height="20" fill="#72a150"/><rect x="580" y="160" width="20" height="20" fill="#72a150"/><rect x="600" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="620" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="640" y="160" width="20" height="20" fill="#6b9a49"/><rect x="660" y="160" width="20" height="20" fill="#679443"/><rect x="680" y="160" width="20" height="20" fill="#6f9e4c"/><rect x="700" y="160" width="20" height="20" fill="#72a150"/><rect x="0" y="180" width="20" height="20" fill="#bfa876"/><rect x="20" y="180" width="20" height="20" fill="#679443"/><rect x="40" y="180" width="20" height="20" fill="#679443"/><rect x="60" y="180" width="20" height="20" fill="#3b7cad"/><rect x="80" y="180" width="20" height="20" fill="#386fa1"/><rect x="100" y="180" width="20" height="20" fill="#386fa1"/><rect x="120" y="180" width="20" height="20" fill="#386fa1"/><rect x="140" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="160" y="180" width="20" height="20" fill="#c3ac7a"/><rect x="180" y="180" width="20" height="20" fill="#bfa876"/><rect x="200" y="180" width="20" height="20" fill="#c8b17e"/><rect x="220" y="180" width="20" height="20" fill="#6b9a49"/><rect x="240" y="180" width="20" height="20" fill="#72a150"/><rect x="260" y="180" width="20" height="20" fill="#72a150"/><rect x="280" y="180" width="20" height="20" fill="#72a150"/><rect x="300" y="180" width="20" height="20" fill="#8e7859"/><rect x="320" y="180" width="20" height="20" fill="#72a150"/><rect x="340" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="360" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="380" y="180" width="20" height="20" fill="#6b9a49"/><rect x="400" y="180" width="20" height="20" fill="#72a150"/><rect x="420" y="180" width="20" height="20" fill="#8b7557"/><rect x="440" y="180" width="20" height="20" fill="#8b7557"/><rect x="460" y="180" width="20" height="20" fill="#6b9a49"/><rect x="480" y="180" width="20" height="20" fill="#679443"/><rect x="500" y="180" width="20" height="20" fill="#679443"/><rect x="520" y="180" width="20" height="20" fill="#72a150"/><rect x="540" y="180" width="20" height="20" fill="#6b9a49"/><rect x="560" y="180" width="20" height="20" fill="#8e7859"/><rect x="580" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="600" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="620" y="180" width="20" height="20" fill="#6b9a49"/><rect x="640" y="180" width="20" height="20" fill="#8e7859"/><rect x="660" y="180" width="20" height="20" fill="#679443"/><rect x="680" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="700" y="180" width="20" height="20" fill="#6f9e4c"/><rect x="0" y="200" width="20" height="20" fill="#386fa1"/><rect x="20" y="200" width="20" height="20" fill="#3b7cad"/><rect x="40" y="200" width="20" height="20" fill="#3b7cad"/><rect x="60" y="200" width="20" height="20" fill="#3f80b0"/><rect x="80" y="200" width="20" height="20" fill="#386fa1"/><rect x="100" y="200" width="20" height="20" fill="#386fa1"/><rect x="120" y="200" width="20" height="20" fill="#3f80b0"/><rect x="140" y="200" width="20" height="20" fill="#3b7cad"/><rect x="160" y="200" width="20" height="20" fill="#3b7cad"/><rect x="180" y="200" width="20" height="20" fill="#bfa876"/><rect x="200" y="200" width="20" height="20" fill="#8b7557"/><rect x="220" y="200" width="20" height="20" fill="#679443"/><rect x="240" y="200" width="20" height="20" fill="#6b9a49"/><rect x="260" y="200" width="20" height="20" fill="#72a150"/><rect x="280" y="200" width="20" height="20" fill="#72a150"/><rect x="300" y="200" width="20" height="20" fill="#679443"/><rect x="320" y="200" width="20" height="20" fill="#6b9a49"/><rect x="340" y="200" width="20" height="20" fill="#6f9e4c"/><rect x="360" y="200" width="20" height="20" fill="#6f9e4c"/><rect x="380" y="200" width="20" height="20" fill="#6f9e4c"/><rect x="400" y="200" width="20" height="20" fill="#679443"/><rect x="420" y="200" width="20" height="20" fill="#72a150"/><rect x="440" y="200" width="20" height="20" fill="#6f9e4c"/><rect x="460" y="200" width="20" height="20" fill="#6b9a49"/><rect x="480" y="200" width="20" height="20" fill="#6f9e4c"/><rect x="500" y="200" width="20" height="20" fill="#6b9a49"/><rect x="520" y="200" width="20" height="20" fill="#6f9e4c"/><rect x="540" y="200" width="20" height="20" fill="#6b9a49"/><rect x="560" y="200" width="20" height="20" fill="#72a150"/><rect x="580" y="200" width="20" height="20" fill="#679443"/><rect x="600" y="200" width="20" height="20" fill="#6b9a49"/><rect x="620" y="200" width="20" height="20" fill="#679443"/><rect x="640" y="200" width="20" height="20" fill="#72a150"/><rect x="660" y="200" width="20" height="20" fill="#857054"/><rect x="680" y="200" width="20" height="20" fill="#679443"/><rect x="700" y="200" width="20" height="20" fill="#72a150"/><rect x="0" y="220" width="20" height="20" fill="#3b7cad"/><rect x="20" y="220" width="20" height="20" fill="#3b7cad"/><rect x="40" y="220" width="20" height="20" fill="#3b7cad"/><rect x="60" y="220" width="20" height="20" fill="#3b7cad"/><rect x="80" y="220" width="20" height="20" fill="#3f80b0"/><rect x="100" y="220" width="20" height="20" fill="#3b7cad"/><rect x="120" y="220" width="20" height="20" fill="#3f80b0"/><rect x="140" y="220" width="20" height="20" fill="#3f80b0"/><rect x="160" y="220" width="20" height="20" fill="#3b7cad"/><rect x="180" y="220" width="20" height="20" fill="#386fa1"/><rect x="200" y="220" width="20" height="20" fill="#679443"/><rect x="220" y="220" width="20" height="20" fill="#679443"/><rect x="240" y="220" width="20" height="20" fill="#72a150"/><rect x="260" y="220" width="20" height="20" fill="#857054"/><rect x="280" y="220" width="20" height="20" fill="#679443"/><rect x="300" y="220" width="20" height="20" fill="#72a150"/><rect x="320" y="220" width="20" height="20" fill="#679443"/><rect x="340" y="220" width="20" height="20" fill="#72a150"/><rect x="360" y="220" width="20" height="20" fill="#8e7859"/><rect x="380" y="220" width="20" height="20" fill="#72a150"/><rect x="400" y="220" width="20" height="20" fill="#8b7557"/><rect x="420" y="220" width="20" height="20" fill="#6b9a49"/><rect x="440" y="220" width="20" height="20" fill="#6b9a49"/><rect x="460" y="220" width="20" height="20" fill="#679443"/><rect x="480" y="220" width="20" height="20" fill="#679443"/><rect x="500" y="220" width="20" height="20" fill="#6b9a49"/><rect x="520" y="220" width="20" height="20" fill="#679443"/><rect x="540" y="220" width="20" height="20" fill="#679443"/><rect x="560" y="220" width="20" height="20" fill="#857054"/><rect x="580" y="220" width="20" height="20" fill="#6b9a49"/><rect x="600" y="220" width="20" height="20" fill="#8b7557"/><rect x="620" y="220" width="20" height="20" fill="#72a150"/><rect x="640" y="220" width="20" height="20" fill="#72a150"/><rect x="660" y="220" width="20" height="20" fill="#72a150"/><rect x="680" y="220" width="20" height="20" fill="#6f9e4c"/><rect x="700" y="220" width="20" height="20" fill="#6f9e4c"/><rect x="300" y="100" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="320" y="100" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="340" y="100" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="360" y="100" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="380" y="100" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="300" y="120" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="320" y="120" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="340" y="120" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="360" y="120" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="380" y="120" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="300" y="140" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="320" y="140" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="340" y="140" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="360" y="140" width="20" height="20" fill="rgba(90,160,240,.16)"/><rect x="380" y="140" width="20" height="20" fill="rgba(90,160,240,.16)"/><circle cx="10" cy="230" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="10" cy="228.5" r="7" fill="#3f5f34"/><circle cx="8" cy="226" r="4.6" fill="#4e7440"/><circle cx="390" cy="230" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="390" cy="228.5" r="7" fill="#3f5f34"/><circle cx="388" cy="226" r="4.6" fill="#4e7440"/><circle cx="110" cy="170" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="110" cy="168.5" r="7" fill="#3f5f34"/><circle cx="108" cy="166" r="4.6" fill="#4e7440"/><circle cx="210" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="210" cy="68.5" r="7" fill="#3f5f34"/><circle cx="208" cy="66" r="4.6" fill="#4e7440"/><circle cx="530" cy="30" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="530" cy="28.5" r="7" fill="#3f5f34"/><circle cx="528" cy="26" r="4.6" fill="#4e7440"/><circle cx="50" cy="150" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="50" cy="148.5" r="7" fill="#3f5f34"/><circle cx="48" cy="146" r="4.6" fill="#4e7440"/><circle cx="710" cy="170" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="710" cy="168.5" r="7" fill="#3f5f34"/><circle cx="708" cy="166" r="4.6" fill="#4e7440"/><circle cx="410" cy="50" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="410" cy="48.5" r="7" fill="#3f5f34"/><circle cx="408" cy="46" r="4.6" fill="#4e7440"/><circle cx="550" cy="30" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="550" cy="28.5" r="7" fill="#3f5f34"/><circle cx="548" cy="26" r="4.6" fill="#4e7440"/><circle cx="90" cy="90" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="90" cy="88.5" r="7" fill="#3f5f34"/><circle cx="88" cy="86" r="4.6" fill="#4e7440"/><circle cx="110" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="110" cy="68.5" r="7" fill="#3f5f34"/><circle cx="108" cy="66" r="4.6" fill="#4e7440"/><circle cx="130" cy="130" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="130" cy="128.5" r="7" fill="#3f5f34"/><circle cx="128" cy="126" r="4.6" fill="#4e7440"/><circle cx="630" cy="230" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="630" cy="228.5" r="7" fill="#3f5f34"/><circle cx="628" cy="226" r="4.6" fill="#4e7440"/><circle cx="570" cy="50" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="570" cy="48.5" r="7" fill="#3f5f34"/><circle cx="568" cy="46" r="4.6" fill="#4e7440"/><circle cx="290" cy="50" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="290" cy="48.5" r="7" fill="#3f5f34"/><circle cx="288" cy="46" r="4.6" fill="#4e7440"/><circle cx="310" cy="230" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="310" cy="228.5" r="7" fill="#3f5f34"/><circle cx="308" cy="226" r="4.6" fill="#4e7440"/><circle cx="690" cy="210" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="690" cy="208.5" r="7" fill="#3f5f34"/><circle cx="688" cy="206" r="4.6" fill="#4e7440"/><circle cx="330" cy="230" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="330" cy="228.5" r="7" fill="#3f5f34"/><circle cx="328" cy="226" r="4.6" fill="#4e7440"/><circle cx="330" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="330" cy="68.5" r="7" fill="#3f5f34"/><circle cx="328" cy="66" r="4.6" fill="#4e7440"/><circle cx="570" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="570" cy="68.5" r="7" fill="#3f5f34"/><circle cx="568" cy="66" r="4.6" fill="#4e7440"/><circle cx="230" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="230" cy="68.5" r="7" fill="#3f5f34"/><circle cx="228" cy="66" r="4.6" fill="#4e7440"/><circle cx="310" cy="50" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="310" cy="48.5" r="7" fill="#3f5f34"/><circle cx="308" cy="46" r="4.6" fill="#4e7440"/><circle cx="90" cy="130" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="90" cy="128.5" r="7" fill="#3f5f34"/><circle cx="88" cy="126" r="4.6" fill="#4e7440"/><circle cx="330" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="330" cy="68.5" r="7" fill="#3f5f34"/><circle cx="328" cy="66" r="4.6" fill="#4e7440"/><circle cx="650" cy="170" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="650" cy="168.5" r="7" fill="#3f5f34"/><circle cx="648" cy="166" r="4.6" fill="#4e7440"/><circle cx="290" cy="210" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="290" cy="208.5" r="7" fill="#3f5f34"/><circle cx="288" cy="206" r="4.6" fill="#4e7440"/><circle cx="130" cy="210" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="130" cy="208.5" r="7" fill="#3f5f34"/><circle cx="128" cy="206" r="4.6" fill="#4e7440"/><circle cx="590" cy="10" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="590" cy="8.5" r="7" fill="#3f5f34"/><circle cx="588" cy="6" r="4.6" fill="#4e7440"/><circle cx="130" cy="10" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="130" cy="8.5" r="7" fill="#3f5f34"/><circle cx="128" cy="6" r="4.6" fill="#4e7440"/><circle cx="610" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="610" cy="68.5" r="7" fill="#3f5f34"/><circle cx="608" cy="66" r="4.6" fill="#4e7440"/><circle cx="570" cy="110" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="570" cy="108.5" r="7" fill="#3f5f34"/><circle cx="568" cy="106" r="4.6" fill="#4e7440"/><circle cx="50" cy="90" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="50" cy="88.5" r="7" fill="#3f5f34"/><circle cx="48" cy="86" r="4.6" fill="#4e7440"/><circle cx="290" cy="30" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="290" cy="28.5" r="7" fill="#3f5f34"/><circle cx="288" cy="26" r="4.6" fill="#4e7440"/><circle cx="70" cy="70" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="70" cy="68.5" r="7" fill="#3f5f34"/><circle cx="68" cy="66" r="4.6" fill="#4e7440"/><circle cx="250" cy="30" r="7.5" fill="rgba(0,0,0,.20)"/><circle cx="250" cy="28.5" r="7" fill="#3f5f34"/><circle cx="248" cy="26" r="4.6" fill="#4e7440"/><rect x="280" y="60" width="20" height="20" fill="#8d9299"/><rect x="300" y="60" width="20" height="20" fill="#8d9299"/><rect x="320" y="60" width="20" height="20" fill="#8d9299"/><rect x="340" y="60" width="20" height="20" fill="#8d9299"/><rect x="360" y="60" width="20" height="20" fill="#8d9299"/><rect x="380" y="60" width="20" height="20" fill="#8d9299"/><rect x="400" y="60" width="20" height="20" fill="#8d9299"/><rect x="420" y="60" width="20" height="20" fill="#8d9299"/><rect x="440" y="60" width="20" height="20" fill="#8d9299"/><rect x="280" y="180" width="20" height="20" fill="#8d9299"/><rect x="300" y="180" width="20" height="20" fill="#8d9299"/><rect x="320" y="180" width="20" height="20" fill="#8d9299"/><rect x="340" y="180" width="20" height="20" fill="#8d9299"/><rect x="380" y="180" width="20" height="20" fill="#8d9299"/><rect x="400" y="180" width="20" height="20" fill="#8d9299"/><rect x="420" y="180" width="20" height="20" fill="#8d9299"/><rect x="440" y="180" width="20" height="20" fill="#8d9299"/><rect x="260" y="60" width="20" height="20" fill="#8d9299"/><rect x="460" y="60" width="20" height="20" fill="#8d9299"/><rect x="260" y="80" width="20" height="20" fill="#8d9299"/><rect x="460" y="80" width="20" height="20" fill="#8d9299"/><rect x="260" y="100" width="20" height="20" fill="#8d9299"/><rect x="460" y="100" width="20" height="20" fill="#8d9299"/><rect x="260" y="120" width="20" height="20" fill="#8d9299"/><rect x="460" y="120" width="20" height="20" fill="#8d9299"/><rect x="260" y="140" width="20" height="20" fill="#8d9299"/><rect x="460" y="140" width="20" height="20" fill="#8d9299"/><rect x="260" y="160" width="20" height="20" fill="#8d9299"/><rect x="460" y="160" width="20" height="20" fill="#8d9299"/><rect x="260" y="180" width="20" height="20" fill="#8d9299"/><rect x="460" y="180" width="20" height="20" fill="#8d9299"/><rect x="360" y="180" width="20" height="20" fill="#9a6a3c"/><rect x="303" y="85" width="14" height="9" rx="2" fill="#c9a03f"/><rect x="323" y="85" width="14" height="9" rx="2" fill="#c9a03f"/><circle cx="350" cy="150" r="6" fill="#e08a3c"/><circle cx="350" cy="150" r="3" fill="#f5c66a"/><rect x="424" y="104" width="12" height="12" rx="2" fill="#6f767f" stroke="#aab3bd" stroke-width="1.5"/><line x1="476" y1="108" x2="492" y2="102" stroke="#ffd98a" stroke-width="1.4" stroke-dasharray="4 3" opacity=".85"/><circle cx="330" cy="126" r="5" fill="#4f7fd4" stroke="#eef2f7" stroke-width="1.4"/><circle cx="388" cy="164" r="5" fill="#c26a4a" stroke="#eef2f7" stroke-width="1.4"/><circle cx="442" cy="132" r="5" fill="#5a9e6f" stroke="#eef2f7" stroke-width="1.4"/><circle cx="520" cy="100" r="5" fill="#c94a44" stroke="#f6d9d6" stroke-width="1.3"/><circle cx="506" cy="128" r="5" fill="#c94a44" stroke="#f6d9d6" stroke-width="1.3"/><rect x="0" y="0" width="720" height="240" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="2"/></svg>
+      <div class="hud">陈 伐木　林 搬运　周 建造<br>石墙 6 段 · 炮塔 1 · 敌 2</div>
+      <div class="lab">CANVAS · 58×42 格 · 拖拽平移 / 滚轮缩放</div>
+    </div>
+    <div class="side">
+      <div class="av"><i>陈</i><div><b style="color:#dbe4ee">陈默</b><br><span style="color:#8b97a4">砍伐 · 8.2</span></div></div>
+      <div style="color:#8b97a4">饥饿 66</div><div class="bar"><i></i></div>
+      <div style="color:#8b97a4">精力 81</div><div class="bar b2"><i></i></div>
+      <div style="color:#8b97a4">心情 58</div><div class="bar b3"><i></i></div>
+      <div style="margin-top:7px;color:#9aa8b5;border-top:1px solid #2f3640;padding-top:6px">
+        技能　砍 6 · 采 5 · 建 4<br>武器　步枪（14 / 7.5 / 10）
+      </div>
+    </div>
+  </div>
+  <div class="r3">
+    <span class="bt">石墙 <em>4石</em></span><span class="bt">木门 <em>6木</em></span><span class="bt">床铺 <em>14木</em></span>
+    <span class="bt">篝火 <em>10木6石</em></span><span class="bt">哨戒炮 <em>22石10木</em></span><span class="bt">餐桌 <em>16木</em></span>
+    <span class="bt" style="border-color:#3f5a72;background:#1e2a33">仓库区</span>
+    <span class="bt" style="border-color:#3f5a72;background:#1e2a33">农田</span>
+    <span class="bt" style="border-color:#5a3a36">拆除</span>
+  </div>
+</div>
+<p style="font-size:11.5px; color:var(--ink3); margin-top:0">上：资源与时间栏　中：主画布 + 选中对象面板　下：建造工具条（显示成本，不可负担时自动置灰）</p>
+
+<h3>6.2 信息架构</h3>
+
+<table>
+  <thead><tr><th style="width:120px">区域</th><th style="width:80px">优先级</th><th>承载信息</th><th style="width:150px">刷新策略</th></tr></thead>
+  <tbody>
+    <tr><td><b>顶栏 · 资源</b></td><td class="c"><span class="b b-p0">P0</span></td><td>木/石/食/餐 四项存量；<b>地面散落物提示</b>（见 FR-6.2.6）</td><td>每帧（数值变化时）</td></tr>
+    <tr><td><b>顶栏 · 时间</b></td><td class="c"><span class="b b-p0">P0</span></td><td>天数、时刻（HH:MM）、天气、目标进度</td><td>每帧</td></tr>
+    <tr><td><b>主画布</b></td><td class="c"><span class="b b-p0">P0</span></td><td>地形、植被、建筑、单位、区域、特效、血条、需求警示标记</td><td>每帧（仅绘制可视区）</td></tr>
+    <tr><td><b>右侧面板</b></td><td class="c"><span class="b b-iter">P1</span></td><td>选中居民的完整状态 / 选中地块信息 / 选中掠袭者信息 / 建造帮助</td><td>200ms 或选中态 700ms</td></tr>
+    <tr><td><b>左下楼志</b></td><td class="c"><span class="b b-iter">P1</span></td><td>最近事件流（袭击、加入、灾害、崩溃、胜利）</td><td>仅在有新事件时重绘</td></tr>
+    <tr><td><b>底部工具条</b></td><td class="c"><span class="b b-iter">P1</span></td><td>6 建筑 + 2 区域 + 拆除，含成本与可负担状态</td><td>资源变化时</td></tr>
+  </tbody>
+</table>
+
+<h4>6.2.6 地面散落物提示 <span class="b b-iter">待实现</span></h4>
+<div class="tbd">
+  <span class="t">需求 · 用户可知性缺口</span>
+  当仓库区外存在散落物资且有居民正在搬运时，资源栏应显示"地面散落：木 42 / 食 8"之类的辅助提示，点击可高亮位置。<br>
+  <b>问题：</b>当前版本玩家砍完树后资源栏不变，只能通过观察搬运动画推断，违反 G2（因果可读）。<b>优先级 P1，建议纳入 v1.1。</b>
+</div>
+
+<h3>6.3 交互映射</h3>
+<table>
+  <thead><tr><th style="width:170px">操作</th><th style="width:150px">结果</th><th>约束与细节</th></tr></thead>
+  <tbody>
+    <tr><td>左键点击空地</td><td>取消选中 / 在该格建造</td><td>建造模式下保持选中状态，可连续摆放（连续摆墙的关键）。</td></tr>
+    <tr><td>左键点击单位</td><td>选中该单位</td><td>居民与掠袭者均可选，面板内容不同（掠袭者显示血条/武器/威胁提示）。</td></tr>
+    <tr><td>左键拖拽</td><td>圈划区域</td><td>仅区域模式下生效；实时预览格数与合法性（红色=不可划）。</td></tr>
+    <tr><td>右键 / Esc</td><td>退出当前模式</td><td>优先级：建造 → 区域 → 选中 → 关闭弹窗。<b>右键不能引起页面滚动或菜单。</b></td></tr>
+    <tr><td>中键拖拽 / WASD</td><td>平移视角</td><td>边界钳制，不允许拖出地图外过远。</td></tr>
+    <tr><td>滚轮</td><td>缩放</td><td>以鼠标位置为锚点缩放，范围约 0.5×–2.5×。</td></tr>
+    <tr><td>空格</td><td>暂停 / 继续</td><td>暂停时画面仍渲染（可见细节），但模拟停表。</td></tr>
+    <tr><td><code>1</code> <code>2</code> <code>3</code></td><td>切换流速</td><td>同时解除暂停。</td></tr>
+    <tr><td><code>Tab</code></td><td>轮换选中居民</td><td>自动将视角居中到目标，配合面板快速巡检。</td></tr>
+    <tr><td><code>H</code></td><td>打开帮助</td><td>打开时自动暂停。</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="t">交互设计的一条硬规则</span>
+  <b>任何操作都不能导致"时间在背后流逝而玩家没察觉"。</b> 因此：所有弹窗自动暂停；建造模式保持时游戏继续（让玩家可以边看边摆，符合"设计"心流）；但如果选中态面板需要长时间阅读，应提示玩家可用空格暂停（帮助文档内说明）。
+</div>
+
+<h3>6.4 视觉规范</h3>
+
+<table>
+  <thead><tr><th style="width:130px">用途</th><th style="width:230px">取值</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>地形 · 草地</td><td><code>#6b9a49</code> / <code>#6f9e4c</code> / <code>#679443</code> / <code>#72a150</code></td><td>4 色微差 + 顶点抖动，避免大面积纯色。</td></tr>
+    <tr><td>地形 · 沙地</td><td><code>#c3ac7a</code> 系</td><td>—</td></tr>
+    <tr><td>地形 · 泥土</td><td><code>#8b7557</code> 系</td><td>—</td></tr>
+    <tr><td>地形 · 水面</td><td><code>#3b7cad</code> 系</td><td>带 1.1s 周期的高光流动，振幅极小。</td></tr>
+    <tr><td>地形 · 岩体</td><td><code>#5c6169</code> 系</td><td>顶部亮边 + 底部投影，强调"实体障碍"。</td></tr>
+    <tr><td>UI 强调色</td><td>苔绿 <code>#2f6b4f</code> / 陶土 <code>#a9552a</code></td><td>暖色调，与冷色地形形成层次，避免"科技蓝"带来的界面感。</td></tr>
+    <tr><td>状态色</td><td>正常 <code>#57c07a</code> · 警戒 <code>#e8a33d</code> · 危险 <code>#e2564d</code></td><td>全局统一，血条/需求条/徽章共用。</td></tr>
+    <tr><td>字体</td><td>系统无衬线栈（含 PingFang SC / 微软雅黑）</td><td>不加载网络字体，保证离线与零请求。</td></tr>
+  </tbody>
+</table>
+
+<h3>6.5 反馈层级</h3>
+<p>所有玩家操作必须有<b>三层反馈</b>，缺一层都会产生"点了没反应"的困惑：</p>
+<table class="compact">
+  <thead><tr><th style="width:130px">层级</th><th style="width:170px">形式</th><th>示例</th></tr></thead>
+  <tbody>
+    <tr><td>即时（&lt; 100ms）</td><td>视觉/状态变化</td><td>放墙时该格立刻出现半透明蓝图；拖拽区域时实时显示格数。</td></tr>
+    <tr><td>短时（数秒–数分钟）</td><td>世界响应</td><td>居民走向蓝图，锤击动画，进度条推进。</td></tr>
+    <tr><td>结果（完成/失败）</td><td>飘字 + 日志 + 音效位</td><td>"+7 食物"飘字；日志"第 4 天开始了"；资源不足时按钮置灰并有轻微抖动。</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<!-- ============================================================ 7 -->
+<div class="inner">
+
+<h2 id="s7"><span class="no">07 / BALANCE</span>数值与平衡</h2>
+
+<p>本章定义"这局游戏应该是什么难度曲线"，并提供实测数据作为回归基线。所有数值以<b>标准玩家</b>（按引导行动、不刻意最优、不主动加压）为基准。</p>
+
+<h3>7.1 目标曲线</h3>
+<p>下表是设计目标区间，不是精确值。任何改动若使某一天的双资源同时跌破下限，视为平衡回退。</p>
+
+<table>
+  <thead><tr><th style="width:60px">天数</th><th style="width:90px">人口</th><th class="num" style="width:100px">木材</th><th class="num" style="width:100px">石料</th><th class="num" style="width:100px">食物</th><th class="num" style="width:90px">累计袭击</th><th>玩家应处状态</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td class="c">3</td><td class="num">180–220</td><td class="num">60–90</td><td class="num">20–30</td><td class="num">0</td><td>刚圈完仓库区，放下第一批床与篝火。</td></tr>
+    <tr><td class="num">2</td><td class="c">3</td><td class="num">200–240</td><td class="num">80–110</td><td class="num">30–40</td><td class="num">1</td><td><b>第一次袭击</b>，通常只有 1 人，用来教学。</td></tr>
+    <tr><td class="num">3</td><td class="c">3–4</td><td class="num">210–250</td><td class="num">110–150</td><td class="num">35–50</td><td class="num">1</td><td>开始修围墙，可能出现流浪者。</td></tr>
+    <tr><td class="num">4</td><td class="c">3–4</td><td class="num">220–260</td><td class="num">140–180</td><td class="num">45–60</td><td class="num">2</td><td>第一次真正的防守压力（2 人）。</td></tr>
+    <tr><td class="num">6</td><td class="c">4–5</td><td class="num">240–280</td><td class="num">180–230</td><td class="num">60–80</td><td class="num">3</td><td>围墙成型，开始考虑炮塔布点。</td></tr>
+    <tr><td class="num">8</td><td class="c">5–6</td><td class="num">260–300</td><td class="num">220–280</td><td class="num">70–90</td><td class="num">4</td><td>石料进入紧张期：修墙 or 造炮。</td></tr>
+    <tr><td class="num">10</td><td class="c">6–7</td><td class="num">280–320</td><td class="num">260–320</td><td class="num">80–100</td><td class="num">5</td><td>人口最多，袭击最大，最难撑的两天。</td></tr>
+    <tr><td class="num">12</td><td class="c">6–7</td><td class="num">290–330</td><td class="num">300–350</td><td class="num">90–110</td><td class="num">6</td><td>最后一波，撑过即胜利。</td></tr>
+  </tbody>
+</table>
+
+<h3>7.2 关键公式汇总</h3>
+<div class="fml">
+<b>时间</b>　1 天 = 1440 分；判定每 5 分一次；植物每 20 分批量生长
+<br><b>需求</b>　饥饿 −0.052/min（醒） / −0.026（睡）；精力 −0.055（醒） / +0.30（睡）
+<br><b>心情</b>　mood ← lerp(mood, target, 0.28)，target = 52 ± 见 §5.4
+<br><b>工作</b>　实际耗时 = 基础时长 ÷ (0.86 + hp% × 0.18) ÷ 疲劳修正
+<br><b>战斗</b>　命中 = clamp(0.62 + 技能×0.022 − 距离×0.042, 0.12, 0.94)；被墙挡 ×0.5
+<br><b>伤害</b>　基础 × random(0.75, 1.30)；死亡阈值 hp ≤ −35
+<br><b>袭击</b>　人数 = 1 + ⌊天/3⌋ + ⌊人/3⌋；强度 = ⌊天/3⌋
+<br><b>作物</b>　生长 += dt / 1700（雨天 ×1.5）
+<br><b>上限</b>　播种：总食 &lt; 人×26；烹饪：餐 &lt; 人×4
+</div>
+
+<h3>7.3 实测验证数据</h3>
+<p>以下为无头浏览器完整跑通 12 天（18000 游戏分钟）的实测结果，可作为回归基线：</p>
+
+<table>
+  <thead><tr><th style="width:190px">指标</th><th style="width:150px">实测值</th><th>判定</th></tr></thead>
+  <tbody>
+    <tr><td>运行时异常</td><td>0</td><td><span class="b b-ship">通过</span> 全程无 JS 错误、无 Promise 拒绝</td></tr>
+    <tr><td>游戏内总时长</td><td>18000 分钟（12.5 天）</td><td><span class="b b-ship">通过</span> 第 13 天正确判定胜利</td></tr>
+    <tr><td>终局木材</td><td class="num">≈ 300</td><td><span class="b b-ship">通过</span> 落在 290–330 目标区间</td></tr>
+    <tr><td>终局石料</td><td class="num">≈ 335</td><td><span class="b b-ship">通过</span> 落在 300–350 目标区间</td></tr>
+    <tr><td>终局食物</td><td class="num">≈ 100</td><td><span class="b b-ship">通过</span> 落在 90–110 目标区间</td></tr>
+    <tr><td>累计袭击人次</td><td class="num">20+</td><td><span class="b b-ship">通过</span> 压力充足且未失控</td></tr>
+    <tr><td>居民阵亡</td><td class="num">0</td><td><span class="b b-iter">偏易</span> 标准 AI 下无人阵亡，见 §13 Q2</td></tr>
+    <tr><td>存档往返一致</td><td>签名完全一致</td><td><span class="b b-ship">通过</span> AC-12</td></tr>
+    <tr><td>单帧渲染（1440×900）</td><td>稳定 60fps</td><td><span class="b b-ship">通过</span> 见 §8 性能预算</td></tr>
+  </tbody>
+</table>
+
+<div class="warn">
+  <span class="t">平衡的已知偏差</span>
+  当前<b>标准打法下居民零阵亡</b>，说明难度对 P1（老手）偏低，对 P2（新手）可能刚好。这是有意的倾斜（P2 为基准用户），但意味着 v1.1 需要一个"更高难度"的可选项，而不是直接把基准难度调高——后者会破坏新手体验。详见 §11.2 与 §13 Q2。
+</div>
+
+</div>
+
+<!-- ============================================================ 8 -->
+<div class="inner">
+
+<h2 id="s8"><span class="no">08 / NON-FUNCTIONAL</span>非功能需求</h2>
+
+<table>
+  <thead><tr><th style="width:130px">类别</th><th style="width:90px">ID</th><th style="width:230px">指标</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="3"><b>性能</b></td><td>NFR-1</td><td>主循环 ≥ 55fps @ 1440×900</td><td>Chrome / Edge 中端集显。测量口径：连续 60 帧的平均帧时间 &lt; 18ms。</td></tr>
+    <tr><td>NFR-2</td><td>模拟 3× 速度下不丢 tick</td><td>3× 时每秒处理 3 倍 tick，单位行为不得跳帧或瞬移。</td></tr>
+    <tr><td>NFR-3</td><td>单帧模拟耗时 &lt; 2ms</td><td>3 居民 + 7 敌人在场时的最坏情况。超限则需把植物生长等改为批处理（已实现，见 FR-5.9.2）。</td></tr>
+
+    <tr><td rowspan="2"><b>容量</b></td><td>NFR-4</td><td>包体 ≤ 200KB（单文件）</td><td>当前 124KB。所有美术为 Canvas 程序化绘制，不引入位图资源。</td></tr>
+    <tr><td>NFR-5</td><td>内存占用 &lt; 150MB</td><td>地块数组 + 特效池 + 贴花上限 160 条（超出先进先出）。</td></tr>
+
+    <tr><td rowspan="2"><b>兼容</b></td><td>NFR-6</td><td>Chrome / Edge / Firefox / Safari 最近 2 个大版本</td><td>依赖项：Canvas 2D、localStorage、requestAnimationFrame、ES2020 语法。</td></tr>
+    <tr><td>NFR-7</td><td>最小窗口 1024×700</td><td>低于此宽度隐藏右栏，改为选中后浮层（见 §11.3）。</td></tr>
+
+    <tr><td rowspan="2"><b>离线</b></td><td>NFR-8</td><td>外部请求数 = 0</td><td>无 CDN、无网络字体、无统计脚本。断网可完整游玩。</td></tr>
+    <tr><td>NFR-9</td><td>冷启动 &lt; 1s</td><td>从双击文件到可操作（含首次地图生成）。</td></tr>
+
+    <tr><td rowspan="2"><b>健壮</b></td><td>NFR-10</td><td>任何异常不得导致白屏</td><td>主循环内 try/catch 兜底；错误记录到内存队列，调试模式可导出。</td></tr>
+    <tr><td>NFR-11</td><td>存档损坏不阻塞游戏</td><td>JSON 解析失败 → 提示"存档不可用" → 允许直接开新局。</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<!-- ============================================================ 9 -->
+<div class="inner">
+
+<h2 id="s9"><span class="no">09 / ACCEPTANCE</span>验收标准</h2>
+
+<p>验收项全部可自动化或可肉眼判定。<b>每一版发布前，AC-03、AC-12、AC-13、AC-14、AC-15 必须全绿</b>，其余允许带已知缺陷发布但需记录。</p>
+
+<table>
+  <thead><tr><th style="width:64px">ID</th><th style="width:150px">验收项</th><th style="width:300px">判定方法</th><th>预期结果</th></tr></thead>
+  <tbody>
+    <tr><td><b>AC-01</b></td><td>30 秒首个有效操作</td><td>观察新手引导关闭后，玩家能否在 30 秒内完成圈仓库区或放床</td><td>3/5 名新用户能独立完成</td></tr>
+    <tr><td><b>AC-02</b></td><td>零外部依赖</td><td>静态扫描 <code>http://</code> <code>https://</code> <code>@import</code> <code>fetch(</code>；断网打开</td><td>命中数 0；断网功能完整</td></tr>
+    <tr><td><b>AC-03</b></td><td>同种子同世界</td><td>同一 seed 生成两次，比对全部地块签名</td><td>完全一致</td></tr>
+    <tr><td><b>AC-04</b></td><td>敌人只在可达区生成</td><td>生成 100 批袭击，检查每批坐标是否在 <code>reach</code> 集合内</td><td>100% 命中，无例外</td></tr>
+    <tr><td><b>AC-05</b></td><td>认领不冲突</td><td>3 名居民同时在线 10 分钟，统计同一目标被两人选中的次数</td><td>0 次</td></tr>
+    <tr><td><b>AC-06</b></td><td>无死锁</td><td>连续跑 2000 分钟，统计任一居民"连续 5 分钟无任务"的次数</td><td>0 次</td></tr>
+    <tr><td><b>AC-07</b></td><td>账目一致</td><td>随机移动物品进/出仓库区 200 次后，比对账目与仓库实物合计</td><td>差值 0</td></tr>
+    <tr><td><b>AC-08</b></td><td>心情输入可干预</td><td>检查心情计算中不可控项（天气）的权重占比</td><td>≤ 8%（当前 −4 / 52 ≈ 7.7%）</td></tr>
+    <tr><td><b>AC-09</b></td><td>战斗可结束</td><td>单场袭击从接触到清场的游戏内耗时</td><td>≤ 120 分钟；超过 1400 分钟敌人自动离场</td></tr>
+    <tr><td><b>AC-10</b></td><td>胜利判定</td><td>跑到第 13 天 00:00</td><td>弹出胜利结算，含存活天数与击杀数</td></tr>
+    <tr><td><b>AC-11</b></td><td>失败判定</td><td>强制全员 hp ≤ 0</td><td>弹出失败结算，模拟停止</td></tr>
+    <tr><td><b>AC-12</b></td><td>存档往返一致</td><td>存档 → 新开 → 读档 → 比对状态签名</td><td>完全一致</td></tr>
+    <tr><td><b>AC-13</b></td><td>长跑无异常</td><td>无头浏览器跑 18000 分钟</td><td>0 异常；正确判定胜利</td></tr>
+    <tr><td><b>AC-14</b></td><td>弹窗暂停</td><td>打开帮助 / 引导 / 结算，观察时间是否推进</td><td>全部暂停；关闭后恢复原状态</td></tr>
+    <tr><td><b>AC-15</b></td><td>性能达标</td><td>1440×900、6 居民 + 7 敌人在场，采样 10 秒帧时间</td><td>平均 ≥ 55fps，无 &gt; 50ms 的长帧</td></tr>
+    <tr><td><b>AC-16</b></td><td>建造连续摆放</td><td>建造模式下连续点击 10 格</td><td>10 个蓝图全部生成，模式不退出</td></tr>
+    <tr><td><b>AC-17</b></td><td>不可负担提示</td><td>资源不足时点击建筑按钮</td><td>按钮置灰 + 点击无效果 + 有提示，不产生负资源</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<!-- ============================================================ 10 -->
+<div class="inner">
+
+<h2 id="s10"><span class="no">10 / METRICS</span>度量与埋点</h2>
+
+<p><b>前置约束：</b>本产品承诺零网络请求（NFR-8），因此<b>不实现任何远程埋点</b>。本章定义的是"若未来接入统计，应采集什么"，以及当前阶段如何通过人工观察获得同类信息。</p>
+
+<h3>10.1 核心漏斗</h3>
+<table>
+  <thead><tr><th style="width:150px">环节</th><th style="width:130px">定义</th><th style="width:140px">目标值</th><th>当前获取方式</th></tr></thead>
+  <tbody>
+    <tr><td>打开</td><td>页面加载完成</td><td>—</td><td>无法统计（无请求）</td></tr>
+    <tr><td>首个有效操作</td><td>圈第一块区域或放第一个建筑</td><td>≤ 30s，完成率 ≥ 90%</td><td>人工观察 5 人</td></tr>
+    <tr><td>第 1 天结束</td><td>天数推进到 2</td><td>≥ 80%</td><td>人工观察</td></tr>
+    <tr><td>第 1 次袭击生还</td><td>第 2 天袭击后仍有居民存活</td><td>≥ 70%</td><td>人工观察</td></tr>
+    <tr><td>通关</td><td>撑满 12 天</td><td>首次通关率 25–40%</td><td>人工观察</td></tr>
+    <tr><td>重开</td><td>结算后点"再来一局"</td><td>失败后 ≥ 50%</td><td>人工观察</td></tr>
+  </tbody>
+</table>
+
+<h3>10.2 需要关注的诊断指标</h3>
+<ul>
+  <li><b>首次死亡时间</b>：如果集中发生在第 2–3 天，说明首次袭击强度过高或引导未讲清"要修墙"。</li>
+  <li><b>资源归零点</b>：如果石料在第 6–8 天归零且玩家未能恢复，说明采矿效率或石料预算需要调整。</li>
+  <li><b>心情崩溃频次</b>：单局超过 3 次说明惩罚过密；0 次说明心情系统没起作用。</li>
+  <li><b>平均局时</b>：若 &gt; 45 分钟，说明玩家在大量暂停或反复重开，节奏需要收紧。</li>
+</ul>
+
+<div class="note">
+  <span class="t">为什么这里不给"精确埋点方案"</span>
+  一个承诺零请求的单机网页游戏，强行加埋点会违背它的核心承诺。因此本 PRD 把度量定义为<b>观察式验证</b>：用 5–10 名真实用户的可观察行为替代统计数据。这在作品的量级上是更诚实也更有效的做法。
+</div>
+
+</div>
+
+<!-- ============================================================ 11 -->
+<div class="inner">
+
+<h2 id="s11"><span class="no">11 / SCOPE</span>范围与里程碑</h2>
+
+<h3>11.1 v1.0（已交付）</h3>
+<table class="compact">
+  <thead><tr><th style="width:130px">模块</th><th>已实现内容</th><th style="width:90px">状态</th></tr></thead>
+  <tbody>
+    <tr><td>世界</td><td>58×42 程序化地图、5 种地形、植被、连通性保证、种子复现</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>居民</td><td>3 名起始居民、5 项技能、3 项需求、心情模型、崩溃</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>调度</td><td>12 级优先级链、认领、A* 寻路、兜底闲逛</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>建造</td><td>6 建筑 + 2 区域、蓝图施工、拆除返还</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>经济</td><td>4 资源、仓库账目、烹饪转化、粮食上限</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>农业</td><td>作物生长、浆果再生、暴雨毁田</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>战斗</td><td>射击/近战、LOS、炮塔、倒地与死亡、自愈</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>事件</td><td>袭击日程、天气、流浪者、偷窃</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>终局</td><td>12 天胜利 / 全员倒地失败 / 结算</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>UI</td><td>画布渲染、侧栏、日志、建造条、引导、帮助</td><td><span class="b b-ship">完成</span></td></tr>
+    <tr><td>存档</td><td>localStorage 单槽、往返一致</td><td><span class="b b-ship">完成</span></td></tr>
+  </tbody>
+</table>
+
+<h3>11.2 v1.1（建议范围）</h3>
+<p>按"投入产出比 × 对支柱的增益"排序，建议只做前三项。</p>
+<table>
+  <thead><tr><th style="width:44px">#</th><th style="width:170px">需求</th><th style="width:90px">类型</th><th>价值与验收</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>地面散落物提示</td><td><span class="b b-new">可用性</span></td><td>修补 G2 的用户可知性缺口（§6.2.6）。验收：砍树后 10 秒内，资源栏可见"地面散落"增量。</td></tr>
+    <tr><td class="num">2</td><td>难度分档</td><td><span class="b b-new">平衡</span></td><td>提供"轻松 / 标准 / 严酷"三档，只调袭击规模系数（×0.7 / ×1.0 / ×1.35）与冷却。不新增机制，成本极低，直接解决 §7.3 的零阵亡偏差。</td></tr>
+    <tr><td class="num">3</td><td>掩体与撤退 AI</td><td><span class="b b-new">深度</span></td><td>敌人优先靠近墙体/炮塔死角；居民 hp &lt; 35 时后撤到墙内。验收：单场袭击平均耗时提升 25%，居民阵亡率在严酷档达到 15–30%。</td></tr>
+    <tr><td class="num">4</td><td>移动端浮层布局</td><td><span class="b b-out">兼容</span></td><td>窄屏改用抽屉式面板。见 NFR-7。</td></tr>
+    <tr><td class="num">5</td><td>音效位</td><td><span class="b b-out">表现</span></td><td>建造完成 / 枪声 / 崩溃 / 胜利。需外部资源，与 NFR-4 的 200KB 预算冲突，建议用 WebAudio 合成。</td></tr>
+  </tbody>
+</table>
+
+<h3>11.3 明确不做（直到 v2 重新评估）</h3>
+<ul>
+  <li>科技树 / 跨局继承（违反"单局 30 分钟完整闭环"定位）</li>
+  <li>动物与狩猎（新增一整条食物链，会打乱 §7.1 的产能平衡）</li>
+  <li>贸易与访客（需要货币，会引入第五种资源，伤害 G3 的稀缺取舍）</li>
+  <li>多存档槽 / 云同步（与零请求冲突）</li>
+</ul>
+
+</div>
+
+<!-- ============================================================ 12 -->
+<div class="inner">
+
+<h2 id="s12"><span class="no">12 / RISK</span>风险登记</h2>
+
+<table>
+  <thead><tr><th style="width:44px">#</th><th style="width:180px">风险</th><th style="width:70px">概率</th><th style="width:70px">影响</th><th>缓解措施</th></tr></thead>
+  <tbody>
+    <tr><td class="num">R1</td><td><b>调度器行为不可预测</b><br>玩家无法理解"为什么他去做这个"</td><td class="c">中</td><td class="c">高</td><td>优先级链固定且可在帮助中列出；居民头顶显示当前任务；侧栏显示"为什么没干活"（缺料/无路/无活）。<b>这是最容易崩掉体验的风险。</b></td></tr>
+    <tr><td class="num">R2</td><td><b>中等局"无事可做"</b><br>D6–D9 没有建设需求，玩家空转</td><td class="c">中</td><td class="c">中</td><td>石料预算刻意设计为"永远差一点"（§5.7.1）；人口增长带来新床位/新食物需求；v1.1 可加入"围墙升级"作为消耗出口。</td></tr>
+    <tr><td class="num">R3</td><td><b>数值调整连锁崩塌</b><br>改一个参数导致 12 天曲线越界</td><td class="c">高</td><td class="c">中</td><td>以 AC-13 长跑作为强制回归门禁；§7.1 的区间表作为断言；所有调整必须附一次 18000 分钟实测。</td></tr>
+    <tr><td class="num">R4</td><td><b>零阵亡导致缺乏张力</b></td><td class="c">已发生</td><td class="c">中</td><td>不直接加压，改为提供难度分档（§11.2-2），避免伤害新手。</td></tr>
+    <tr><td class="num">R5</td><td><b>单文件架构不可持续</b><br>继续加功能会导致 3000 行文件的维护成本爆炸</td><td class="c">高</td><td class="c">低</td><td>保持"分区注释 + 稳定区块边界"（15 个编号区段）；若 v2 需大幅扩展，再拆分为多文件 + 构建脚本，但<b>交付形态仍是单文件</b>。</td></tr>
+    <tr><td class="num">R6</td><td><b>首次游玩被弹窗打断</b><br>引导太长导致直接关闭</td><td class="c">中</td><td class="c">中</td><td>引导只用 4 张卡片 + 一屏"四件事"，且可跳过；记住已读状态。首次进入不强制输入。</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<!-- ============================================================ 13 -->
+<div class="inner">
+
+<h2 id="s13"><span class="no">13 / OPEN QUESTIONS</span>开放问题</h2>
+
+<p>以下问题在 v1.0 未解决，需在 v1.1 立项前决策。每条标注了"当前默认做法"与"决策所需的依据"。</p>
+
+<table>
+  <thead><tr><th style="width:44px">#</th><th style="width:220px">问题</th><th style="width:230px">当前默认做法</th><th>决策依据</th></tr></thead>
+  <tbody>
+    <tr><td class="num">Q1</td><td><b>餐桌是否有实际作用？</b><br>当前仅为装饰，玩家会怀疑"花了 16 木什么也没发生"</td><td>保留为装饰，不涉及数值</td><td>若保留则必须在描述中说明"装饰/心情微加成"；建议改为"进食时在餐桌旁 +2 心情"，成本极低。</td></tr>
+    <tr><td class="num">Q2</td><td><b>基准难度应该让玩家死几次？</b></td><td>标准打法零阵亡</td><td>取决于基准用户是 P1 还是 P2。建议：P2 零阵亡、P1 需 1–2 次失败才通关 → 用难度分档解决，而非单点调参。</td></tr>
+    <tr><td class="num">Q3</td><td><b>"持续观察"是否应该保留？</b></td><td>胜利/失败后可关闭结算继续看</td><td>用于截图与复盘，成本近零，保留。但需确认不会误导玩家以为"游戏还在继续"。</td></tr>
+    <tr><td class="num">Q4</td><td><b>是否需要"重开保留地图"？</b></td><td>重开随机新种子</td><td>若玩家开始"刷地图找好地形"，说明地图差异过大，应收窄地形随机范围而非提供重开同图。</td></tr>
+    <tr><td class="num">Q5</td><td><b>居民是否应有名字/个性？</b></td><td>随机中文名 + moodBias</td><td>名字已提供情感锚点，但叙事不在范围内（§2.3）。建议维持"名字 + 一点点偏差"，不写台词。</td></tr>
+    <tr><td class="num">Q6</td><td><b>12 天是否最优目标时长？</b></td><td>12 天，实测 25–40 分钟</td><td>若实测平均局时 &gt; 45 分钟，应缩至 10 天；若 &lt; 20 分钟，应延长至 15 天并加一波袭击。</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<!-- ============================================================ 14 -->
+<div class="inner">
+
+<h2 id="s14"><span class="no">14 / APPENDIX</span>附录</h2>
+
+<h3>14.1 术语表</h3>
+<table class="compact">
+  <thead><tr><th style="width:150px">术语</th><th>定义</th></tr></thead>
+  <tbody>
+    <tr><td><b>tick</b></td><td>一次模拟步进 = 1 游戏分钟。所有衰减、冷却、生长均以此为基准。</td></tr>
+    <tr><td><b>格 / tile</b></td><td>地图最小单位，34×34 像素。所有距离（射程、探测）以格为单位。</td></tr>
+    <tr><td><b>认领 / claim</b></td><td>居民选定目标后对该格的独占标记，防止多居民抢同一目标。</td></tr>
+    <tr><td><b>蓝图</b></td><td>已扣料但未完工的建筑。居民施工推进进度，满进度后实体化。</td></tr>
+    <tr><td><b>可达集合 / reach</b></td><td>从地图中心洪水填充得到的连通格集合，用于保证敌人有路可走。</td></tr>
+    <tr><td><b>LOS</b></td><td>Line of Sight，视线。被石墙/炮塔等实体阻挡时命中率减半。</td></tr>
+    <tr><td><b>倒地 / down</b></td><td>hp ≤ 0 但 &gt; −35 的状态。失去行动力但未死亡，可被继续攻击。</td></tr>
+    <tr><td><b>moodBias</b></td><td>居民的个体心情基线偏差，制造"有人天生乐观/悲观"的差异。</td></tr>
+  </tbody>
+</table>
+
+<h3>14.2 交付形态</h3>
+<table class="compact">
+  <tbody>
+    <tr><td style="width:150px"><b>文件</b></td><td><code>index.html</code>（单文件，约 124KB）</td></tr>
+    <tr><td><b>依赖</b></td><td>无。浏览器原生 Canvas 2D + localStorage。</td></tr>
+    <tr><td><b>调试参数</b></td><td><code>?demo=1</code> 跳至中局演示；<code>&amp;night=1</code> 夜间；<code>?test=N</code> 无头跑 N 分钟并输出状态；<code>?iotest=1</code> 存档往返自检</td></tr>
+    <tr><td><b>代码组织</b></td><td>单文件内按 15 个编号区段划分（工具 / 常量 / 世界 / 渲染 / 寻路 / 单位 / 工作 / 战斗 / 事件 / UI / 存档）</td></tr>
+  </tbody>
+</table>
+
+<h3>14.3 修订记录</h3>
+<table class="compact">
+  <thead><tr><th style="width:90px">版本</th><th style="width:110px">日期</th><th>变更</th></tr></thead>
+  <tbody>
+    <tr><td><b>v1.0</b></td><td>2026-10-27</td><td>首版。基于已交付的 v1.0.0 构建整理全部系统规格、验收标准与平衡基线；新增 §6.2.6 地面散落物提示（P1）、§11.2 难度分档建议。</td></tr>
+  </tbody>
+</table>
+
+<div class="foot">
+  <div><b>边陲 FRONTIER</b> · 产品需求文档 v1.0</div>
+  <div>本文档描述的是已实现系统 + 下一阶段范围基线，所有数值可用于回归测试</div>
+</div>
+
+</div>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var links = [].slice.call(document.querySelectorAll('.nav a'));
+  var secs = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  function spy(){
+    var y = window.scrollY + 120, best = 0;
+    secs.forEach(function(s, i){ if(s && s.offsetTop <= y) best = i; });
+    links.forEach(function(a, i){ a.classList.toggle('on', i === best); });
+  }
+  window.addEventListener('scroll', spy, {passive:true}); spy();
+})();
+</script>
+</body>
+</html>
